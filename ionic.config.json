@@ -1,0 +1,7 @@
+{
+  "name": "Pixie",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

@@ -1,0 +1,27 @@
+node_modules
+bun.lockb
+package-lock.json
+
+*.log*
+.nuxt
+.vscode
+.vercel
+.nitro
+.cache
+.output
+.env
+dist
+
+# .nuxtignore
+dump/**
+pages/dev.vue
+assets/icons/unused/*
+public/icons/unused/*
+public/local/**
+
+# env
+*.local
+
+# dev
+back.sh
+build.sh

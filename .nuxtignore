@@ -1,0 +1,3 @@
+dump/**
+public/icons/unused/*
+pages/dev.vue

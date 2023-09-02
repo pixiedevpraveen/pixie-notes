@@ -1,0 +1,44 @@
+{
+  // https://v3.nuxtjs.org/concepts/typescript
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": "./",
+    "allowJs": true,
+    "paths": {
+      "@/components/*": [
+        "components/*"
+      ],
+      "@/composables/*": [
+        "composables/*"
+      ],
+      "@/models/*": [
+        "models/*"
+      ],
+      "@/assets/*": [
+        "assets/*"
+      ],
+      "~/assets/*": [
+        "assets/*"
+      ],
+      "~assets/*": [
+        "assets/*"
+      ],
+      "/img/*": [
+        "public/img/*"
+      ],
+    },
+  },
+  "include": [
+    "env.d.ts",
+    ".nuxt/nuxt.d.ts",
+    "models/*.ts",
+    "**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dump",
+    "public",
+  ]
+}

@@ -7,10 +7,13 @@ const setting = useSetting()
 const store = useStore()
 const mutation = useMutation()
 
+const user = setting.value.user.value
 const localKeys = ref<string[]>([])
 
 onMounted(async () => {
     localKeys.value = (await localStore._el.keys()).keys
+    if (!user.id)
+        await auth.setUser()
 })
 // onUnmounted(() => {
 // })
@@ -30,6 +33,7 @@ function handleLogin(e: MouseEvent) {
             if (r) {
                 mutation.setMsg("You're authenticated.")
                 mutation.closeDialog('settings.login')
+                auth.setUser()
             } else throw new Error()
         }).catch((err) => {
             mutation.setMsg("Unable to authenticate." + err.message)
@@ -57,8 +61,8 @@ async function clearCache(key: string) {
 
         <template #interaction>
             <div class="d-flex flex-column gap-1 py-2">
-                <oui-list-card :title="setting.user.value.name" :img="setting.user.value.avatar" alt="user avatar"
-                    class="pointer shadowed" :text="[setting.user.value.username, emailHide(setting.user.value.email)]"
+                <oui-list-card :title="user.name" :img="user.avatar || '/icons/user.svg'" alt="user avatar"
+                    class="pointer shadowed" :text="[user.username, user.emailVisibility ? user.email : emailHide(user.email)]"
                     @click="mutation.openDialog('settings.login')" />
 
                 <!-- <oui-list-card title="App settings" icon="menu" alt="user avatar" :text="[user.username, user.email]" /> -->

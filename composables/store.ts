@@ -1,3 +1,5 @@
+import { User } from "@/models/user"
+
 export const useStore = () => useState('store', () => ({
     dev: process.dev,
     showNavbar: false,
@@ -75,7 +77,7 @@ export const useMutation = () => ({
 })
 
 
-export function defaultUser() {
+export function defaultUser(): {value: User} {
     return {
         value: {
             id: '',
@@ -84,7 +86,7 @@ export function defaultUser() {
             username: '',
             email: '',
             is_admin: false,
-            avatar: '/icons/user.svg',
+            avatar: '',
             data: {},
             created: '',
             updated: ''

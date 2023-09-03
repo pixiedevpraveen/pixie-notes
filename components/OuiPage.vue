@@ -106,7 +106,7 @@ function handleSliverScroll() {
 
 .oui-interaction {
     overflow-y: scroll;
-    min-height: calc(93vh - var(--oui-header--height));
+    min-height: calc(93vh - var(--oui-header--height)) !important;
     flex: 1;
     /* scroll-padding-bottom: -25rem; */
     margin-top: var(--oui-header--height);

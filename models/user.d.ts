@@ -12,6 +12,7 @@ export type User = UserListItem & {
     name: string
     avatar: string
     data: Json
+    emailVisibility: boolean
     created: string
     updated: string
 }

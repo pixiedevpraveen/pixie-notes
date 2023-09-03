@@ -1,6 +1,6 @@
 <template>
     <Transition name="opacity">
-        <div class="oui-dialog-mask" v-if="store.drawer"></div>
+        <div class="oui-dialog-mask" v-show="store.drawer"></div>
     </Transition>
     <div class="oui-drawer" :class="{ 'show': store.drawer }" @click="toggle" data-toggle>
         <div class="oui-drawer__body" v-bind="$attrs">

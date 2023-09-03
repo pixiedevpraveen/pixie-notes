@@ -2,7 +2,7 @@
     <div class="oui-list-card d-flex justify-content-between align-items-center gap-2 py-4 px-4 rounded-3">
         <Icon v-if="icon" :name="icon" :alt="alt" class="medium" />
         <div class="row gap-1">
-            <strong class="font-bold font-2x">{{ title }}</strong>
+            <h2>{{ title }}</h2>
             <div>
                 <span class="dot-join" v-for="t in text" :key="t">{{ t }}</span>
             </div>

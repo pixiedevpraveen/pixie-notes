@@ -34,9 +34,9 @@ function handleSliverScroll() {
 <template>
     <main class="oui-page__container">
         <div class="oui-viewing" ref="viewingEl">
-            <strong class="oui-viewing-title">
+            <h1 class="oui-viewing-title">
                 <slot name="viewing" />
-            </strong>
+            </h1>
         </div>
         <div class="oui-header" :class="{ 'sticky': headerSticky }">
             <slot name="header" />

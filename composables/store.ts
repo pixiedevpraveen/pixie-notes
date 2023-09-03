@@ -18,13 +18,13 @@ export const activities = {
 }
 
 export const useSetting = () => useState('settings', () => ({
-    authentication: defaultAuth(),
-    user: defaultUser(),
+    authentication: { value: defaultAuth(), hidden: true },
+    user: { value: defaultUser(), hidden: true },
     syncNotes: {
         value: true
     },
     appName: {
-        value: "Pixie"
+        value: "Pixie", readonly: true
     },
     autoSaveNotes: {
         value: true
@@ -77,29 +77,26 @@ export const useMutation = () => ({
 })
 
 
-export function defaultUser(): {value: User} {
+export function defaultUser(): User {
     return {
-        value: {
-            id: '',
-            verified: false,
-            name: '',
-            username: '',
-            email: '',
-            is_admin: false,
-            avatar: '',
-            data: {},
-            created: '',
-            updated: ''
-        }
+        id: '',
+        verified: false,
+        name: '',
+        username: '',
+        email: '',
+        emailVisibility: false,
+        is_admin: false,
+        avatar: '',
+        data: {},
+        created: '',
+        updated: ''
     }
 }
 
 export function defaultAuth() {
     return {
-        value: {
-            email: "",
-            password: "",
-            token: ""
-        }
+        email: "",
+        password: "",
+        token: ""
     }
 }

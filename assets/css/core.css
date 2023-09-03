@@ -1005,6 +1005,15 @@
 .scroll-y-auto {
     overflow-y: auto;
 }
+.p-relative {
+    position: relative;
+}
+.p-absolute {
+    position: absolute;
+}
+.p-fixed {
+    position: fixed;
+}
 
 /* Helper End */
 

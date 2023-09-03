@@ -1,12 +1,10 @@
 <template>
-    <label class="oui-label oui-container-slider" :for="id">
+    <label class="oui-label oui-container-slider" :for="id" :class="parentClass">
         <span>{{ label }}</span>
-        <input :id="id" type="range" class="oui-input-slider" v-bind="$attrs" :value="value"
-            @click="e => $emit('update:value', (e.target as HTMLInputElement).value)">
+        <input :id="id" type="range" class="oui-input-slider" v-bind="$attrs">
     </label>
 </template>
 
 <script setup lang="ts">
-defineProps<{ label: string, value: boolean, id: string }>()
-defineEmits(['update:value'])
+defineProps<{ label: string, parentClass?: string, id?: string }>()
 </script>

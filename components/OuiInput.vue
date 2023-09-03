@@ -1,15 +1,13 @@
 <template>
-    <label class="oui-label oui-container-input" :for="id">
+    <label class="oui-label oui-container-input" :for="id" :class="parentClass">
         <span class="p-2 font-2x" v-if="label">{{ label }}</span>
-        <input :id="id" :type="type" :value="value" class="oui-input-text oui-input-password"
-            @change="e => $emit('update:value', (e.target as HTMLInputElement).value)">
-        <!-- <Icon name="eye" /> -->
+        <input :id="id" :type="type" class="oui-input-text"
+            v-bind="$attrs">
     </label>
 </template>
 
 <script setup lang="ts">
-defineProps<{ label?: string, value?: string, id: string, type: string }>()
-defineEmits(['update:value'])
+defineProps<{ label: string, parentClass?: string, id: string, type: string }>()
 </script>
 
 <style>
@@ -24,9 +22,4 @@ defineEmits(['update:value'])
     padding: .5rem;
 }
 
-.oui-input-password[type=password]::after {
-    /* color: red */
-    content: '';
-    background: url('/icons/eye.svg');
-}
 </style>

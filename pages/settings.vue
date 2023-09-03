@@ -7,12 +7,11 @@ const setting = useSetting()
 const store = useStore()
 const mutation = useMutation()
 
-const user = setting.value.user.value
 const localKeys = ref<string[]>([])
 
 onMounted(async () => {
     localKeys.value = (await localStore._el.keys()).keys
-    if (!user.id)
+    if (!setting.value.user.value.id)
         await auth.setUser()
 })
 // onUnmounted(() => {
@@ -61,11 +60,10 @@ async function clearCache(key: string) {
 
         <template #interaction>
             <div class="d-flex flex-column gap-1 py-2">
-                <oui-list-card :title="user.name" :img="user.avatar || '/icons/user.svg'" alt="user avatar"
-                    class="pointer shadowed" :text="[user.username, user.emailVisibility ? user.email : emailHide(user.email)]"
+                <oui-list-card :title="setting.user.value.name" :img="setting.user.value.avatar || '/icons/user.svg'"
+                    alt="user avatar" class="pointer shadowed"
+                    :text="[setting.user.value.username, setting.user.value.emailVisibility ? setting.user.value.email : emailHide(setting.user.value.email)]"
                     @click="mutation.openDialog('settings.login')" />
-
-                <!-- <oui-list-card title="App settings" icon="menu" alt="user avatar" :text="[user.username, user.email]" /> -->
 
                 <div v-for="(v, k) in setting" :key="k" class="mx-3">
                     <!-- <oui-json-input :name="k" :value="setting[k]" /> -->
@@ -74,8 +72,8 @@ async function clearCache(key: string) {
                         :id="k" :label="strCamelSplit(k)"
                         @update:checked="(c: boolean) => (v.value as unknown as boolean) = c"></oui-switch>
                     <oui-input type="text" v-else-if="(typeof v.value === 'string')" :value="(v.value as string)" :id="k"
-                        :label="strCamelSplit(k)"
-                        @update:value="(c: string) => (v.value as unknown as string) = c"></oui-input>
+                        :label="strCamelSplit(k)" @change="(e) => (v.value as unknown as string) = e.target.value"
+                        :readonly="v.readonly"></oui-input>
                 </div>
                 <oui-list-card title="Cache" alt="user avatar" class="pointer shadowed" :text="['Notes, ']"
                     @click="mutation.openDialog('settings.cache')" />
@@ -84,8 +82,8 @@ async function clearCache(key: string) {
             <OuiDialog name="settings.login" closeBtn="Close" title="User Authentication">
                 <oui-input type="email" :value="setting.authentication.value.email" id="authentication-email" label="Email"
                     @update:value="(c: string) => setting.authentication.value.email = c"></oui-input>
-                <oui-input type="password" :value="setting.authentication.value.password" id="authentication-password"
-                    label="Password" @update:value="(c: string) => setting.authentication.value.password = c"></oui-input>
+                <oui-password-input :value="setting.authentication.value.password" id="authentication-password"
+                    label="Password" @update:value="(c: string) => setting.authentication.value.password = c"></oui-password-input>
                 <template #action>
                     <div class="oui-dialog-divider"></div>
                     <a href="#" class="oui-dialog-action-link" @click="handleLogin">{{ 'Login' }}</a>

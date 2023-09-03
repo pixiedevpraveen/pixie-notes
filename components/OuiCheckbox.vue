@@ -1,13 +1,11 @@
 <template>
-    <label class="oui-label oui-container-checkbox" :for="id">
+    <label class="oui-label oui-container-checkbox" :for="id" :class="parentClass">
         <span class="oui-input-text">{{ label }}</span>
-        <input :id="id" type="checkbox" class="oui-input-checkbox" :checked="checked"
-            @click="e => $emit('update:checked', (e.target as HTMLInputElement).checked)">
+        <input :id="id" type="checkbox" class="oui-input-checkbox">
         <span class="oui-input-checkbox-checkmark"></span>
     </label>
 </template>
 
 <script setup lang="ts">
-defineProps<{ label: string, checked: boolean, id: string }>()
-defineEmits(['update:checked'])
+defineProps<{ label: string, parentClass?: string, id?: string }>()
 </script>

@@ -44,12 +44,12 @@ async function clearCache(key: string) {
 </script>
 
 <template>
-    <OuiPage>
+    <OuiPage title="Settings">
         <template #viewing>
-            <strong class="oui-viewing-title">Settings</strong>
+            Settings
         </template>
 
-        <template #sticky-top>
+        <template #header>
             <div class="d-flex text-center align-items-center scroll-y-auto">
                 <icon name="menu" class="medium pointer m-2 mx-3" @click="mutation.openDrawer()" />
             </div>

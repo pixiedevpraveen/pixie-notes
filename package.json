@@ -2,14 +2,14 @@
   "private": true,
   "name": "pixie",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev --port 3005 --dotenv .env.local",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "sync": "cap sync",
-    "ionic:build": "npm run generate",
+    "ionic:build": "npm run generate && npx cap copy",
     "ionic:serve": "npm run dev"
   },
   "devDependencies": {

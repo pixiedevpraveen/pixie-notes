@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { usePocketbase } from '@/composables/pb';
 import { strSlice } from '@/composables/utils';
-import { NoteListItem } from '@/models/note';
+import { Note, NoteListItem } from '@/models/note';
 import { useLocalStore } from '@/composables/storage';
 
 useHead({
     title: "Notes"
 })
 
-const route = useRoute()
-const router = useRouter()
 const localStore = useLocalStore()
 const mutation = useMutation()
 const selected = ref(new Set<string>())
-const notesData = useState<NoteListItem[]>('notesData')
+const notesData = useState<NoteListItem[] | Note[]>('notesData')
 let notesTimeoutId: ReturnType<typeof setTimeout>
 
 async function getNotes() {
@@ -83,12 +81,12 @@ function clearAll() {
 
 <template>
     <div class="page">
-        <OuiPage v-show="!$route.hash.startsWith('#note-')">
+        <OuiPage v-show="!$route.hash.startsWith('#note-')" :title="selected.size ? `${selected.size} Selected` : 'Notes'">
             <template #viewing>
-                <strong class="oui-viewing-title">{{ selected.size ? `${selected.size} Selected` : "Notes" }}</strong>
+                {{ selected.size ? `${selected.size} Selected` : "Notes" }}
             </template>
-            <template #sticky-top>
-                <div class="d-flex text-center align-items-center\">
+            <template #header>
+                <div class="d-flex text-center align-items-center">
                     <div class="d-flex flex-column justify-content-center gap-2" v-show="notesData && selected.size">
                         <icon :name="(selected.size === notesData?.length ? 'check-' : '') + 'square'" class="pointer mx-3"
                             @click="addAll" />
@@ -116,6 +114,7 @@ function clearAll() {
                         </NuxtLink>
                     </li>
                 </oui-bubble-list>
+
             </template>
             <template #sticky-bottom>
                 <Transition name="pop">

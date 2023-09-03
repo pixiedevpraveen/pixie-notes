@@ -35,13 +35,13 @@ function contentUpdate(str: string) {
     contentTimeoutId = setTimeout(async () => {
         if (noteData.value) {
             noteData.value.content = str
-            await save(noteData.value)
         }
     }, 1000);
 }
 
+
 async function save(data?: Note) {
-    console.log("updated", data?.title);
+    // console.log("updated", data?.title);
     await localStore.setItem(key, data)
 }
 
@@ -59,51 +59,25 @@ function toHtml(str: string) {
 </script>
 
 <template>
-    <OuiPage class="hide-viewing full-interaction sticky-top">
+    <div v-if="noteData">
 
-        <Title>{{ noteData?.title }}</Title>
+        <Head>
+            <Title>{{ noteData?.title }}</Title>
+        </Head>
 
-        <template #sticky-top>
+        <div>
             <div class="d-flex text-center align-items-center" v-if="noteData">
                 <icon name="less-than" class="medium pointer m-2 mx-3" @click="close()" />
-                <input type="text" v-model.lazy="noteData.title">
+                <input type="text" v-model="noteData.title">
             </div>
-        </template>
+        </div>
 
-        <template #interaction v-if="noteData">
-            <!-- <note-editor name="content" :content="noteData.content"></note-editor> -->
-            <textarea v-show="editing" class="py-2" name="content"
-                @keyup="e => contentUpdate((e.target as HTMLTextAreaElement).value)" :value="noteData.content"></textarea>
-            <content-preview :content="toHtml(noteData.content)" @click="editing || (editing = true)"></content-preview>
-        </template>
+        <!-- <note-editor name="content" :content="noteData.content"></note-editor> -->
+        <textarea v-show="editing" class="py-2" name="content"
+            @keyup="e => contentUpdate((e.target as HTMLTextAreaElement).value)" :value="noteData.content"></textarea>
+        <content-preview :content="toHtml(noteData.content)" @click="editing || (editing = true)"></content-preview>
 
-        <template #sticky-bottom>
-            <Transition name="pop">
-                <MenuItem class="gap-1 py-2 text-center" v-show="false">
-                <div>
-                    <icon name="folder" />
-                    <span class="mt-1">Move</span>
-                </div>
-                <div>
-                    <icon name="lock" />
-                    <span class="mt-1">Lock</span>
-                </div>
-                <div>
-                    <icon name="share" />
-                    <span class="mt-1">Share</span>
-                </div>
-                <div>
-                    <icon name="trash" />
-                    <span class="mt-1">Delete</span>
-                </div>
-                <div>
-                    <icon name="x" />
-                    <span class="mt-1">Clear</span>
-                </div>
-                </MenuItem>
-            </Transition>
-        </template>
-    </OuiPage>
+    </div>
 </template>
 
 <style scoped>

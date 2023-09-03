@@ -1,17 +1,50 @@
 <script setup lang="ts">
-const interaction = ref<HTMLElement>()
-const stickyTop = ref<HTMLElement>()
+
+defineProps<{ title?: string }>()
+
+const headerSticky = ref(false)
+const viewingEl = ref<HTMLElement>()
+let obs: IntersectionObserver
+
+onMounted(() => {
+    handleSliverScroll()
+})
+onUnmounted(() => {
+    if (viewingEl.value)
+        obs.unobserve(viewingEl.value)
+})
+
+function handleSliverScroll() {
+    if (!viewingEl.value) return
+
+    obs = new IntersectionObserver((els) => {
+        const t = els[0]
+
+        if (t.isIntersecting) {
+            headerSticky.value = false
+        } else
+            headerSticky.value = true
+    }, { threshold: [0, .2, .4, .6, .8, 1] })
+
+    obs.observe(viewingEl.value)
+}
+
 </script>
 
 <template>
     <main class="oui-page__container">
-        <div class="oui-viewing">
-            <slot name="viewing" />
+        <div class="oui-viewing" ref="viewingEl">
+            <strong class="oui-viewing-title">
+                <slot name="viewing" />
+            </strong>
         </div>
-        <div class="oui-sticky-top" ref="stickyTop">
-            <slot name="sticky-top" />
+        <div class="oui-header" :class="{ 'sticky': headerSticky }">
+            <slot name="header" />
+            <Transition name="pop">
+                <h2 v-show="headerSticky">{{ title }}</h2>
+            </Transition>
         </div>
-        <div class="oui-interaction" ref="interaction">
+        <div class="oui-interaction">
             <slot name="interaction" />
         </div>
         <div class="oui-sticky-bottom">
@@ -20,22 +53,33 @@ const stickyTop = ref<HTMLElement>()
     </main>
 </template>
 
-<style scoped>
+<style>
 .oui-viewing {
     height: var(--oui-viewing--height) !important;
 }
+
 
 .hide-viewing>.oui-viewing {
     display: none;
 }
 
-.oui-sticky-top {
-    max-height: var(--oui-sticky-top--height) !important;
+.oui-header.sticky {
+    position: fixed;
     top: 0;
-    width: 100%;
 }
 
-.sticky-top .oui-sticky-top {
+.oui-header {
+    position: absolute;
+    max-height: var(--oui-header--height) !important;
+    width: 100%;
+    background: var(--background);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+.sticky-header .oui-header {
+    position: absolute;
     border-bottom: 1px solid var(--d-grey);
     box-shadow: 0 4px 0 #ffffff50
         /* var(--surface-background) */
@@ -53,20 +97,23 @@ const stickyTop = ref<HTMLElement>()
 }
 
 .oui-page__container {
+    position: relative;
     --oui-viewing--height: 40%;
-    --oui-sticky-top--height: min(5rem, 12%);
-    overflow: scroll;
+    --oui-header--height: min(5rem, 15%);
+    overflow-y: scroll;
     height: 100vh;
 }
 
 .oui-interaction {
     overflow-y: scroll;
-    height: calc(93vh - var(--oui-sticky-top--height));
+    min-height: calc(93vh - var(--oui-header--height));
     flex: 1;
     /* scroll-padding-bottom: -25rem; */
+    margin-top: var(--oui-header--height);
     padding-bottom: 5rem;
 }
 
 .full-interaction>.oui-interaction {
     min-height: 100vh;
-}</style>
+}
+</style>

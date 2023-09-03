@@ -17,7 +17,7 @@ export const auth = {
                 return true
             }
         } catch (er) {
-            if (setting.value._errorMsg)
+            if (setting.value._errorMsg.value)
                 mutation.setMsg("Unable to login! check your internet.")
         }
         return false

@@ -81,7 +81,7 @@ function clearAll() {
 
 <template>
     <div class="page">
-        <OuiPage v-show="!$route.hash.startsWith('#note-')" :title="selected.size ? `${selected.size} Selected` : 'Notes'">
+        <OuiPage v-show="!$route.query.noteId" :title="selected.size ? `${selected.size} Selected` : 'Notes'">
             <template #viewing>
                 {{ selected.size ? `${selected.size} Selected` : "Notes" }}
             </template>
@@ -100,7 +100,7 @@ function clearAll() {
                 <oui-bubble-list title="" class="mt-2" v-if="notesData">
                     <li v-for="note in notesData" :key="note.id" class="oui-bubble-item"
                         @contextmenu.prevent="selected.size || toggleSelect(note.id)" @click="e => handleClick(e, note.id)">
-                        <NuxtLink :class="{ 'disabled': selected.size }" :to="'#note-' + note.id" class="d-flex">
+                        <NuxtLink :class="{ 'disabled': selected.size }" :to="{ query: { noteId: note.id } }" class="d-flex">
                             <Icon
                                 :name="selected.size ? (selected.has(note.id) ? 'check-square' : 'square') : 'circle-filled'"
                                 class="grey medium me-2" :color="note.color" />
@@ -144,7 +144,7 @@ function clearAll() {
             </template>
         </OuiPage>
         <Transition name="page">
-            <edit-note v-if="$route.hash.startsWith('#note-')" :id="$route.hash.replace('#note-', '')" style="z-index: 2;"
+            <edit-note v-if="$route.query.noteId" :id="$route.query.noteId as string" style="z-index: 2;"
                 :close="() => { $router.back() }"></edit-note>
         </Transition>
     </div>

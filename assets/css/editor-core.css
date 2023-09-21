@@ -1,0 +1,36 @@
+.pr-font-serif {
+    font-family: Georgia, Times New Roman, serif;
+}
+
+.pr-font-monospace {
+    font-family: Monaco, Courier New, monospace;
+}
+
+.pr-size-small {
+    font-size: 0.75em;
+}
+
+.pr-size-large {
+    font-size: 1.5em;
+}
+
+.pr-size-huge {
+    font-size: 2.5em;
+}
+
+.pr-direction-rtl {
+    direction: rtl !important;
+    text-align: inherit;
+}
+
+.pr-align-center {
+    text-align: center;
+}
+
+.pr-align-justify {
+    text-align: justify;
+}
+
+.pr-align-right {
+    text-align: right;
+}

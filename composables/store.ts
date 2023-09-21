@@ -1,4 +1,4 @@
-import { User } from "@/models/user"
+import { Note } from "@/models/note"
 
 export const useStore = () => useState('store', () => ({
     dev: process.dev,
@@ -17,14 +17,34 @@ export const activities = {
     onBack: new Map<string, { type: string, once: boolean, action: Function }>(),
 }
 
+export const useNotes = () => useState<Map<string, Note>>('notes', () => (new Map()))
+
 export const useSetting = () => useState('settings', () => ({
-    authentication: { value: defaultAuth(), hidden: true },
-    user: { value: defaultUser(), hidden: true },
-    syncNotes: {
-        value: true
-    },
     appName: {
         value: "Pixie", readonly: true
+    },
+    syncNotes: {
+        value: true, readonly: false
+    },
+    noteUnlockMethods: {
+        value: {
+            password: {
+                value: "",
+                type: "password"
+            },
+            biometrics: {
+                value: false,
+                type: "biometrics"
+            },
+            type: "category"
+        },
+        enabled: false,
+        type: "category"
+    },
+    homeRoutes: {
+        value: [{ name: "notes", path: "/notes", icon: "file-text" }, { name: "settings", path: "/settings", icon: "settings" }],
+        view: { selected: "list", options: ["list", "grid"] },
+        type: "routes"
     },
     autoSaveNotes: {
         value: true
@@ -75,28 +95,3 @@ export const useMutation = () => ({
         this.store.value.dialog.push(name)
     }
 })
-
-
-export function defaultUser(): User {
-    return {
-        id: '',
-        verified: false,
-        name: '',
-        username: '',
-        email: '',
-        emailVisibility: false,
-        is_admin: false,
-        avatar: '',
-        data: {},
-        created: '',
-        updated: ''
-    }
-}
-
-export function defaultAuth() {
-    return {
-        email: "",
-        password: "",
-        token: ""
-    }
-}

@@ -12,13 +12,16 @@
                     <icon :name="route[2] || 'folder'" class="no-active-bg mx-2" data-toggle /> {{ route[0] }}
                 </NuxtLink>
             </div>
+            <div id="drawer-teleport">
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
 const store = useStore()
-const routes = [["Home", "/", "home"], ["Notes", "/notes", "file-text"]/* , ["Pages", "/pages", "file-text"] *//* , ["Dev", "/dev", "alert-triangle"] */]
+const routes = [["Home", "/", "home"], ["Notes", "/notes", "note"]/* , ["Pages", "/pages", "file-text"] */, ["About", "/about", "info"], ['Favourite Notes', '/fav-notes', 'star'], ['Locked Notes', '/locked-notes', 'lock']]
+// const notesData = useState('notes')
 
 function toggle(e) {
     if (e.target.dataset.toggle !== undefined) store.value.drawer = !store.value.drawer
@@ -47,6 +50,11 @@ function handleSwipe() {
 </script>
 
 <style>
+html,
+body {
+    overflow: hidden !important;
+}
+
 .oui-drawer {
     position: absolute;
     width: 100vw;
@@ -62,7 +70,7 @@ function handleSwipe() {
 
 .oui-drawer~.page {
     transition: var(--transition-fast);
-    overflow-y: hidden;
+    overflow: hidden;
 }
 
 .oui-drawer.show~.page {

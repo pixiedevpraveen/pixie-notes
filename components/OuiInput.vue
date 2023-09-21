@@ -1,13 +1,13 @@
 <template>
     <label class="oui-label oui-container-input" :for="id" :class="parentClass">
-        <span class="p-2 font-2x" v-if="label">{{ label }}</span>
+        <span class="p-2 font-2x" v-if="label" :class="labelClass">{{ label }}</span>
         <input :id="id" :type="type" class="oui-input-text"
             v-bind="$attrs">
     </label>
 </template>
 
 <script setup lang="ts">
-defineProps<{ label: string, parentClass?: string, id: string, type: string }>()
+defineProps<{ label: string, parentClass?: string, labelClass?: string, id: string, type: string }>()
 </script>
 
 <style>

@@ -2,7 +2,6 @@
 
 /*import the theme you want to use*/
 @import "themes/oui-light-theme.css" screen;
-@import "themes/oui-dark-theme.css" screen and (prefers-color-scheme: dark);
 
 /*add components you will use in your app*/
 @import 'components/_appbar.css';
@@ -33,7 +32,7 @@
 @import 'utils/_media.css';
 @import 'utils/_spacing.css';
 
-html {
+/* html {
     background-color: var(--background);
     color: var(--text);
-}
+} */

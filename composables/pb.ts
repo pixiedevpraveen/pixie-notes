@@ -1,42 +1,39 @@
 import { NetworkError } from '@/models/errors';
 import { User } from '@/models/user';
 import PocketBase from 'pocketbase';
+import { Preferences } from '@capacitor/preferences';
 
-export const auth = {
-    async login() {
+export const usePbAuth = () => ({
+    async login(email?: string, password?: string) {
         const pb = usePocketbase()
-        const setting = useSetting()
-        const mutation = useMutation()
 
         try {
-            const conf = setting.value.authentication.value
-            if (conf.token) {
-                pb.authStore.loadFromCookie(conf.token)
+            if (email && password) {
+                await pb.collection("users").authWithPassword(email, password)
+                const token = pb.authStore.exportToCookie()
+
+                this.updateAuthUser()
+                await Preferences.set({ key: 'token', value: token })
                 return true
-            } else if (conf.email && conf.password) {
-                await pb.admins.authWithPassword(conf.email, conf.password)
-                conf.token = pb.authStore.exportToCookie()
+            }
+            
+            const token = await Preferences.get({ key: 'token' })
+            if (token.value) {
+                pb.authStore.loadFromCookie(token.value)
+                this.updateAuthUser()
                 return true
             }
         } catch (er) {
-            if (setting.value._errorMsg.value)
-                mutation.setMsg("Unable to login! check your internet.")
         }
         return false
     },
-    async setUser() {
+    updateAuthUser() {
         const pb = usePocketbase()
-        const setting = useSetting()
 
-        try {
-            const user = await pb.collection("users").getFirstListItem<User>(`email = '${setting.value.authentication.value.email}'`)
-            setting.value.user.value = user
-            return true
-        } catch (er) {
-        }
-        return false
+        const authUser = useAuthUser()
+        authUser.value = pb.authStore.model as User
     }
-}
+})
 
 export const usePocketbase = () => {
     var pb

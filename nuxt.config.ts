@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
         public: {
             appName: '',
+            appKey: '',
             apiBase: '',
             siteUrl: '',
             imgbbUrl: '',

@@ -19,8 +19,8 @@
     color: var(--text);
 
     /* wip */
-    mask-image: url(~/assets/oneui/icons/previous.svg);
-    -webkit-mask-image: url(~/assets/oneui/icons/previous.svg);
+    mask-image: url(/icons/previous.svg);
+    -webkit-mask-image: url(/icons/previous.svg);
     mask-position: center;
     -webkit-mask-position: center;
     mask-repeat: no-repeat;
@@ -45,8 +45,8 @@
     margin-right: 9pt;
     background-color: var(--text);
     /* wip */
-    mask-image: url(~/assets/oneui/icons/vertical_ellipsis.svg);
-    -webkit-mask-image: url(~/assets/oneui/icons/vertical_ellipsis.svg);
+    mask-image: url(/icons/vertical_ellipsis.svg);
+    -webkit-mask-image: url(/icons/vertical_ellipsis.svg);
     mask-position: center;
     -webkit-mask-position: center;
     mask-repeat: no-repeat;

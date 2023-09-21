@@ -3,6 +3,7 @@
 defineProps<{ title?: string }>()
 
 const headerSticky = ref(false)
+const showTitle = ref(false)
 const viewingEl = ref<HTMLElement>()
 let obs: IntersectionObserver
 
@@ -18,13 +19,17 @@ function handleSliverScroll() {
     if (!viewingEl.value) return
 
     obs = new IntersectionObserver((els) => {
-        const t = els[0]
+        if (els[0].intersectionRatio < .5)
+            showTitle.value = true
+        else
+            showTitle.value = false
 
-        if (t.isIntersecting) {
+        if (els[0].isIntersecting) {
             headerSticky.value = false
-        } else
+        } else {
             headerSticky.value = true
-    }, { threshold: [0, .2, .4, .6, .8, 1] })
+        }
+    }, { threshold: [0, .4, .5] })
 
     obs.observe(viewingEl.value)
 }
@@ -34,15 +39,19 @@ function handleSliverScroll() {
 <template>
     <main class="oui-page__container">
         <div class="oui-viewing" ref="viewingEl">
-            <h1 class="oui-viewing-title">
+            <h1 class="oui-viewing-title pb-2">
                 <slot name="viewing" />
             </h1>
+            <span class="font-2x">{{ $attrs.meta }}</span>
         </div>
         <div class="oui-header" :class="{ 'sticky': headerSticky }">
             <slot name="header" />
             <Transition name="pop">
-                <h2 v-show="headerSticky">{{ title }}</h2>
+                <h2 :class="{ 'visibility-0': !showTitle }">{{ title }}</h2>
             </Transition>
+            <div class="ms-auto d-flex align-items-center">
+                <slot name="header-menu" />
+            </div>
         </div>
         <div class="oui-interaction">
             <slot name="interaction" />
@@ -78,6 +87,10 @@ function handleSliverScroll() {
     align-items: center;
 }
 
+.no-header-title .oui-header h2 {
+    display: none;
+}
+
 .sticky-header .oui-header {
     position: absolute;
     border-bottom: 1px solid var(--d-grey);
@@ -102,6 +115,7 @@ function handleSliverScroll() {
     --oui-header--height: min(5rem, 15%);
     overflow-y: scroll;
     height: 100vh;
+    background: var(--background);
 }
 
 .oui-interaction {

@@ -231,7 +231,7 @@ div[empty-text]:empty:before {
 }
 
 .text-secondary {
-	color: var(--text-purple)
+	color: var(--text-purple) !important
 }
 
 .text-gr {

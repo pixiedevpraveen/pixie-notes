@@ -475,6 +475,11 @@
     display: none !important;
     visibility: hidden !important
 }
+
+.visibility-0 {
+    visibility: hidden !important
+}
+
 .disabled {
     pointer-events: none;
 }
@@ -492,8 +497,16 @@
     overflow: hidden !important
 }
 
+.border-0 {
+    border: none !important
+}
+
 .bordered {
-    border: .0625rem solid var(--generic-border-color) !important
+    border: .0625rem solid var(--border-color) !important
+}
+
+.outline-0 {
+    outline: transparent
 }
 
 .rounded {
@@ -943,7 +956,7 @@
 }
 
 .rounded-0 {
-    border-radius: unset;
+    border-radius: unset !important;
 }
 
 .rounded {
@@ -1005,12 +1018,15 @@
 .scroll-y-auto {
     overflow-y: auto;
 }
+
 .p-relative {
     position: relative;
 }
+
 .p-absolute {
     position: absolute;
 }
+
 .p-fixed {
     position: fixed;
 }
@@ -1158,8 +1174,43 @@
     align-self: stretch !important
 }
 
+.text-trancated {
+    display: inline-block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-upper-first::first-letter {
+    text-transform: uppercase;
+}
+
+.text-upper {
+    text-transform: uppercase;
+}
+
+.text-capitalize {
+    text-transform: capitalize;
+}
+
+.text-lower {
+    text-transform: lowercase;
+}
+
 .text-center {
     text-align: center
+}
+
+.text-left {
+    text-align: left
+}
+
+.text-right {
+    text-align: right
 }
 
 .text-justify {
@@ -1176,6 +1227,10 @@
 
 .font-2x {
     font-size: 2ch
+}
+
+.font-3x {
+    font-size: 3ch
 }
 
 @media screen and (min-width: 768px) {

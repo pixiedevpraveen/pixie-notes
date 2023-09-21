@@ -1,19 +1,21 @@
+export type Content = {
+    id: string
+    content: string
+    updated: string
+}
 
-export type NoteListItem = {
+export type Note = {
     title: string
     id: string
     is_locked: boolean
     is_favourite: boolean
+    is_active: boolean
     created: string
     updated: string
     color: string
-}
-
-export type Note = NoteListItem & {
     folder: string
-    user: UserListItem
-    is_active: boolean
+    user: string
     is_md: boolean
-    tags: string
-    content: string
+    keywords: string
+    content?: string
 }

@@ -7,11 +7,18 @@
     border-radius: 24px;
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
-    color: var(--primary);
+    /* color: var(--primary); */
     background-color: var(--control-background);
     transition: border .3s;
     text-decoration: none;
     text-align: center;
+}
+
+.oui-button.small,
+.oui-button.button-small {
+    padding: 0 1rem;
+    height: 2rem;
+    line-height: 2rem;
 }
 
 .oui-icon-button {
@@ -24,7 +31,7 @@
     transition: border .3s;
 }
 
-.oui-button:hover, 
+.oui-button:hover,
 .oui-button:focus,
 .oui-icon-button:hover,
 .oui-icon-button:focus {
@@ -32,7 +39,7 @@
     border: solid 1px var(--primary);
 }
 
-.oui-button--active, 
+.oui-button--active,
 .oui-icon-button--active {
     color: var(--on-primary);
     background-color: var(--primary);

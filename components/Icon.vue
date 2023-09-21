@@ -1,5 +1,5 @@
 <template>
-    <span :class="'icon-' + name" :style="{ backgroundImage: `url('/icons/${name}.svg')`, color }"></span>
+    <span :class="'icon-' + name" :title="name" :style="{ backgroundImage: `url('/icons/${name}.svg')`, color }"></span>
 </template>
 
 <script setup lang="ts">

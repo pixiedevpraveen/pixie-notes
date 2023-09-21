@@ -18,7 +18,7 @@
     --text: var(--black);
     --text-secondary: var(--d-grey);
     --primary: var(--blue);
-    --secondary: var();
+    --secondary: var(--green);
     --active: var(--xl-blue);
     --inactive: var(--xl-blue);
 
@@ -50,5 +50,5 @@
     --border-surface: var(--m-grey);
     --border-alt-surface: var(--m-grey);
     --border-control: var(--d-grey);
-
+    --border-color: var(--d-grey)
 }

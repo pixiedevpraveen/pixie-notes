@@ -34,3 +34,9 @@
 .pr-align-right {
     text-align: right;
 }
+
+.pr-note {
+    background-color: #80808050;
+    padding: .2rem;
+    border-radius: 5px;
+}

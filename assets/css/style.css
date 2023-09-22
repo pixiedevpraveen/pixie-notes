@@ -1,5 +1,6 @@
 @import "@/assets/oneui/oui.css";
 @import "@/assets/css/core.css";
+@import "@/assets/css/editor-core.css";
 
 :root {
     --transition: .5s;
@@ -43,7 +44,7 @@ svg {
 
 span:is(:active, :focus),
 a:is(:active, :focus),
-a:not(.extenal),
+a:not([target=_blank]),
 .route:is(:active, .active, :focus),
 .route {
     text-decoration: none;

@@ -40,18 +40,16 @@ const setting = useSetting()
 const search = useState<string>('note-search', route.query.search)
 
 const editorEl = ref<HTMLDivElement>()
-let toolbarEl: HTMLDivElement
 
 function getEditorEl() {
     return document.querySelector("#editor") as HTMLDivElement
 }
 
-onMounted(() => {
-    toolbarEl = document.querySelector('#editor-root>#toolbar') as HTMLDivElement
-    if (editorEl.value && toolbarEl) {
-        editor = Editor(editorEl.value, toolbarEl, sendContent)
+watch(editorEl, (el) => {
+    if (el) {
+        editor = Editor(el, sendContent)
         editor.enable()
-    }
+    } else if (editor && editor.state.isEnabled) editor.disable()
 })
 
 function navigate(v: ModeType) {
@@ -101,7 +99,16 @@ const toolbarBtns: { [tag: string]: { icon?: string, label?: string } } = {
     S: { icon: "strike" },
     CODE: { icon: "code" },
     LINK: { icon: "link" },
-    // NOTE: { label: "Note" }
+    NOTE: { icon: "note" },
+    ALIGN_LEFT: { icon: "align-left" },
+    ALIGN_CENTER: { icon: "align-center" },
+    ALIGN_RIGHT: { icon: "align-right" },
+}
+
+function handleEditorBtnClick(e: Event) {
+    if (editor && editor.state.isEnabled)
+        editor.btnClick(e)
+    else console.log(editor);
 }
 
 </script>
@@ -257,21 +264,22 @@ const toolbarBtns: { [tag: string]: { icon?: string, label?: string } } = {
             </div>
         </div>
 
-        <div class="oui-dialog-mask"></div>
+        <!-- <div class="oui-dialog-mask"></div> -->
 
         <div id="editor-root" class="d-flex flex-column">
-            <pcoder-web ref="editorEl" v-if="data" id="editor" class="selectable px-2"
-                @keydown="e => editor && editor.handleEditorKeydown(e)" v-html="html" @input="handleInput"
+            <pcoder-web ref="editorEl" id="editor" class="selectable px-2"
+                @keydown="e => editor?.handleEditorKeydown(e)" v-html="html" @input="handleInput"
                 :contenteditable="$route.query.mode === 'edit'" @click="toggleMode('edit')"></pcoder-web>
 
-            <oui-button-floating class="button-top-right pointer shadowed rounded-3 square" data-fullscreen="show" @click="toggleFullscreen">
+            <oui-button-floating class="button-top-right pointer shadowed rounded-3 square" data-fullscreen="show"
+                @click="toggleFullscreen">
                 <Icon name="minimize" class="full smaller button-minimize no-active-bg" />
             </oui-button-floating>
 
-            <div id="toolbar" data-mode-edit="push">
-                <anchor v-for="(attr, tag) of toolbarBtns" :key="tag" :data-wrap-tag="tag"
-                    @click="e => editor && editor.btnClick(e)" class="editor-btn">
-                    <icon v-if="attr.icon" :name="attr.icon" class="small full" />
+            <div id="toolbar" data-mode-edit="push" class="d-flex justify-content-evenly scroll-x-auto p-1 gap-11">
+                <anchor v-for="(attr, tag) of toolbarBtns" :key="tag" :data-wrap-tag="tag" @click="handleEditorBtnClick"
+                    class="editor-btn rounded-3 p-1">
+                    <icon v-if="attr.icon" :name="attr.icon" class="small no-active-bg full" />
                     <strong v-else>{{ attr.label }}</strong>
                 </anchor>
             </div>
@@ -281,8 +289,6 @@ const toolbarBtns: { [tag: string]: { icon?: string, label?: string } } = {
 </template>
 
 <style scoped>
-@import "@/assets/css/editor-core.css";
-
 :fullscreen #editor {
     background: var(--background);
     padding-top: 0;
@@ -291,6 +297,7 @@ const toolbarBtns: { [tag: string]: { icon?: string, label?: string } } = {
 [data-fullscreen=show] {
     display: none;
 }
+
 :fullscreen [data-fullscreen=show] {
     display: block;
 }
@@ -403,17 +410,11 @@ const toolbarBtns: { [tag: string]: { icon?: string, label?: string } } = {
     position: fixed;
     bottom: 0;
     width: 100%;
-    background-color: var(--background);
-    display: flex;
-    gap: 1rem;
     background-color: var(--textual-background);
-    justify-content: space-evenly;
 }
 
-/* .editor-btn {} */
-
+.editor-btn:active,
 .editor-btn.active {
-    font-weight: bold;
-    background-color: var(--background);
+    background-color: #80808050;
 }
 </style>

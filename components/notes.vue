@@ -86,7 +86,7 @@ function handleClick(e: Event, note: Note) {
     }
 }
 
-function filteredNotes() {
+const filteredNotes = computed(() => {
     let fnotes = notes.value.sort((a, b) => {
         const ai = order.value.asc ? a : b
         const bi = order.value.asc ? b : a
@@ -102,11 +102,11 @@ function filteredNotes() {
         return (new Date(ai.updated).getTime() - new Date(bi.updated).getTime()) + (av - bv) * (order.value.asc ? -1 : 1)
     })
 
-    if (search.value?.length)
+    if (search.value)
         return fnotes.filter(n => n.title.search(search.value) !== -1)
 
     return fnotes
-}
+})
 
 let searchTimeoutId: ReturnType<typeof setTimeout>
 function handleSearch(e: Event) {
@@ -211,7 +211,8 @@ async function clearAll(update = true) {
         <loader v-show="pending" />
 
         <OuiPage :title="selected.size ? `${selected.size} Selected` : 'Notes'"
-            :meta="selected.size ? '' : (notes.length ?? 0) + ' notes'" :class="{ 'no-header-title': $route.query.search }">
+            :meta="selected.size ? '' : (filteredNotes.length ?? 0) + ' notes'"
+            :class="{ 'no-header-title': $route.query.search }">
             <template #viewing>
                 {{ selected.size ? `${selected.size} Selected` : title }}
             </template>
@@ -284,7 +285,7 @@ async function clearAll(update = true) {
                     <table>
                         <tbody>
                             <TransitionGroup name="bounce">
-                                <NuxtLink v-for="note in filteredNotes()" :key="note.id"
+                                <NuxtLink v-for="note in filteredNotes" :key="note.id"
                                     @contextmenu.prevent="selected.size || toggleSelect(note)"
                                     @click="e => handleClick(e, note)"
                                     :to="selected.size ? undefined : '/notes/' + note.id">

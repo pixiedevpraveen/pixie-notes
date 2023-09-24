@@ -55,7 +55,7 @@ onMounted(async () => {
 
 /**
  * Handle Back press events: closing drawer, dialog, clearing selection, and also performing onBack activities else nothing found then simply navigator to back or to Home (/)
- * @param canGoBack boolean 
+ * @param {boolean} canGoBack 
  */
 async function handleBack(canGoBack) {
 

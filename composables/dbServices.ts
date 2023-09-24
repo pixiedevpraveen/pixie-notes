@@ -1,11 +1,11 @@
 import { Note, Content } from "@/models/note";
 import { Models } from "./orm";
-import { BaseSearchActionsInterface, BaseWriteActionsInterface } from "indexeddb-orm/dist/models/model.interface";
+import { BaseSearchActionsInterface, BaseWriteActionsInterface, TransactionModes } from "indexeddb-orm/dist/models/model.interface";
 
 export class NotesService {
 
     static async getModels() {
-        const orm = useOrm()
+        const orm = useOrm("pixie")
         return await orm.connect<Models>()
     }
 
@@ -39,7 +39,7 @@ export class NotesService {
 
         const res = await models.notes.save(note.id, data, deepMerge)
         if (res)
-            this.createSyncRecord(models, note.id as string, "update", Object.keys(note).join(','))
+            this.createSyncRecord(models, note.id as string, "update", Object.keys(note))
         return res
     }
 
@@ -61,7 +61,7 @@ export class NotesService {
         if (ifValue) query = (query.where(field, ifValue) as BaseWriteActionsInterface)
         const res = await (query as BaseWriteActionsInterface).update(data, true)
         if (res)
-            this.createSyncRecord(models, ids.join(','), "update", field + ",updated")
+            this.createSyncRecord(models, ids.join(','), "update", [field])
         return res
     }
 
@@ -71,13 +71,13 @@ export class NotesService {
 
         const res = await models.contents.save(id, { content, id, table: "notes", updated: updated }, deepMerge)
         if (res)
-            this.createSyncRecord(models, id, "update", "content")
+            this.createSyncRecord(models, id, "update", ["content"])
         return res
     }
 
-    private static async createSyncRecord(models: Awaited<ReturnType<typeof this.getModels>>, tableId: Note['id'], action: "create" | "update" | "delete", fields?: string) {
+    private static async createSyncRecord(models: Awaited<ReturnType<typeof this.getModels>>, tableId: Note['id'], action: "create" | "update" | "delete", fields: string[] = []) {
         setTimeout(() => {
-            models.sync.create({ action, table: "notes", tableId, fields })
+            models.sync.create({ action, table: "notes", tableId, fields: fields.join(',') })
         }, 10);
     }
 

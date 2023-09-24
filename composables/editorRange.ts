@@ -74,6 +74,25 @@ const isWrappedWithClassName = function (className: string, parentDOM?: any) {
     }
 }
 
+const isWrappedWithStyle = function (attribute: string, parentDOM?: any) {
+    const range = getRange()
+    if (!range) return
+
+    let dom = isSelectedWholeContentAnElement()
+    if (dom && dom?.style[attribute]) return dom?.style?.color
+
+    const node = range.commonAncestorContainer
+    let value: string | null = null
+    if (parentDOM) {
+        const res = getParentElementsUntil(node, parentDOM).some(node => { value = node?.style[attribute]; return value })
+        if (res) return value
+    } else {
+        const res = getParentElements(node).some(node => { value = node?.style[attribute]; return value })
+        if (res) return value
+    }
+}
+
+
 // IYILESTIR EGER ELEMENT ALTINDAKI TEXT NODE HEPSI SECILSE BILE UNDEFINED DONUYOR.
 // secimin hepsinin bir elemana eslesip eslesmedigini denetler
 // 
@@ -380,6 +399,7 @@ const undo = until => {
         focusEditableElement()
 
     } catch (er) {
+        // focusEditableElement()
         console.log(er.message);
     }
 }
@@ -441,10 +461,28 @@ const unwrapWith = tagName => {
     unwrap(element)
 }
 
+
+const unWrappedStyle = function (attribute: string, parentDOM?: any) {
+    const range = getRange()
+    if (!range) return
+
+    let dom = isSelectedWholeContentAnElement()
+    if (dom && dom?.style[attribute]) dom?.style?.removeProperty(attribute)
+
+    const node = range.commonAncestorContainer
+    let value: string | null = null
+    if (parentDOM) {
+        const res = getParentElementsUntil(node, parentDOM).some(node => { if (node?.style[attribute]) node?.style?.removeProperty(attribute); else undefined })
+    } else {
+        const res = getParentElements(node).some(node => { if (node?.style[attribute]) node?.style?.removeProperty(attribute); else undefined })
+    }
+}
+
 export {
     getRange,
     isWrappedWith,
     isWrappedWithClassName,
+    isWrappedWithStyle,
     isAllSelectedATextNode,
     isSelectedAnElement,
     isSelectedWholeContentAnElement,
@@ -457,4 +495,6 @@ export {
     splitText,
     undo,
     unwrapWith,
+    unWrappedStyle,
+    focusEditableElement,
 }

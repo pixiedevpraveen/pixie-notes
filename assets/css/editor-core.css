@@ -40,3 +40,17 @@
     padding: .2rem;
     border-radius: 5px;
 }
+
+.pr-textbox {
+    resize: both;
+    border: 1px solid currentColor;
+    padding: .5rem;
+    border-radius: 5px;
+    min-height: 2rem;
+}
+.pr-textbox:first-child:not(:only-child) {
+    border-bottom: none;
+}
+.pr-textbox:last-child:not(:only-child) {
+    border-top: none;
+}

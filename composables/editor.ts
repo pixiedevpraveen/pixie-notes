@@ -29,6 +29,11 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
         node.classList.add(config.classPrefix + 'note')
         return node
     }
+    const TEXTBOX = () => {
+        const node = document.createElement('div')
+        node.classList.add(config.classPrefix + 'textbox')
+        return node
+    }
     const ALIGN_LEFT = () => {
         if (IS_ALIGN_CENTER()) {
             UN_ALIGN_CENTER()
@@ -60,6 +65,23 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
         return node
     }
 
+    const TEXT_COLOR = () => {
+        const node = document.createElement('span')
+        getColorInput().then(color =>
+            node.style.color = color
+        )
+        return node
+    }
+
+    const BG_COLOR = () => {
+        const node = document.createElement('span')
+        getColorInput().then(color =>
+            node.style.backgroundColor = color
+        )
+        return node
+    }
+
+    const IS_SPAN = () => EditorRange.isWrappedWith("SPAN")
     const IS_BOLD = () => EditorRange.isWrappedWith("STRONG")
     const IS_CODE = () => EditorRange.isWrappedWith("CODE")
     const IS_ITALIC = () => EditorRange.isWrappedWith("EM")
@@ -80,9 +102,21 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
         return EditorRange.isWrappedWithClassName(config.classPrefix + "align-right")
     }
 
+    const IS_TEXT_COLOR = () => {
+        return EditorRange.isWrappedWithStyle("color")
+    }
+
+    const IS_BG_COLOR = () => {
+        return EditorRange.isWrappedWithStyle("backgroundColor")
+    }
+
+    const IS_TEXTBOX = () => {
+        return EditorRange.isWrappedWithClassName(config.classPrefix + "textbox")
+    }
 
     const DO_BR = () => EditorRange.insert(BR())
 
+    const DO_TEXTBOX = () => EditorRange.insert(TEXTBOX())
     const DO_BOLD = () => EditorRange.surround(BOLD())
     const DO_CODE = () => EditorRange.surround(CODE())
     const DO_ITALIC = () => EditorRange.surround(ITALIC())
@@ -94,6 +128,8 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
     const DO_ALIGN_LEFT = () => /* EditorRange.surround */(ALIGN_LEFT())
     const DO_ALIGN_CENTER = () => EditorRange.surround(ALIGN_CENTER())
     const DO_ALIGN_RIGHT = () => EditorRange.surround(ALIGN_RIGHT())
+    const DO_TEXT_COLOR = () => EditorRange.surround(TEXT_COLOR())
+    const DO_BG_COLOR = () => EditorRange.surround(BG_COLOR())
 
 
     const UN_BOLD = () => EditorRange.undo("STRONG")
@@ -107,11 +143,15 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
     const UN_ALIGN_LEFT = () => { }
     const UN_ALIGN_CENTER = () => EditorRange.undo({ className: config.classPrefix + "align-center", tagName: "DIV" })
     const UN_ALIGN_RIGHT = () => EditorRange.undo({ className: config.classPrefix + "align-right", tagName: "DIV" })
-    function enable() {
+    const UN_TEXT_COLOR = () => EditorRange.unWrappedStyle("color")
+    const UN_BG_COLOR = () => EditorRange.unWrappedStyle("background-color")
+    const UN_TEXTBOX = () => EditorRange.undo({ className: config.classPrefix + "textbox", tagName: "DIV" })
 
+    function enable() {
         document.addEventListener('selectionchange', (ev) => {
             document.querySelectorAll<HTMLButtonElement>(config.btnSelector).forEach(button => {
                 let isActive = false;
+                let value: string
 
                 switch (button.dataset.wrapTag) {
                     case "EM":
@@ -140,6 +180,24 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
                     case "ALIGN_RIGHT":
                         isActive = !!IS_ALIGN_RIGHT()
                         break;
+
+                    case "TEXT_COLOR":
+                        value = IS_TEXT_COLOR()
+                        if (value)
+                            button.style.color = value // "2px solid " + value + " !important"
+                        else
+                            button.style.removeProperty("color")
+                        isActive = !!value
+                        break;
+
+                    case "BG_COLOR":
+                        value = IS_BG_COLOR()
+                        if (value)
+                            button.style.backgroundColor = value
+                        else
+                            button.style.removeProperty("background-color")
+                        isActive = !!value
+                        break;
                 }
 
                 isActive ? button.classList.add('active') : button.classList.remove('active')
@@ -148,8 +206,8 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
         })
     }
 
-    function btnClick(event: Event) {
-        const t = event.currentTarget as HTMLButtonElement
+    function btnClick(event: Event, value?: string) {
+        const t = event.currentTarget as HTMLAnchorElement
 
         if (!t?.dataset) return
 
@@ -166,6 +224,9 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
                 break;
             case "S":
                 !!IS_S() ? UN_S() : DO_S()
+                break;
+            case "TEXTBOX":
+                !!IS_TEXTBOX() ? UN_TEXTBOX() : DO_TEXTBOX()
                 break;
             case "CODE":
                 !!IS_CODE() ? UN_CODE() : DO_CODE()
@@ -194,9 +255,37 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
             case "ALIGN_RIGHT":
                 !!IS_ALIGN_RIGHT() ? UN_ALIGN_RIGHT() : DO_ALIGN_RIGHT()
                 break;
+            case "TEXT_COLOR":
+                !!IS_TEXT_COLOR() ? UN_TEXT_COLOR() : DO_TEXT_COLOR()
+                break;
+            case "BG_COLOR":
+                !!IS_BG_COLOR() ? UN_BG_COLOR() : DO_BG_COLOR()
+                break;
         }
 
         sendChanges()
+    }
+
+    async function getColorInput() {
+        const tmp = document.createElement("input")
+        tmp.type = "color"
+        tmp.click()
+        function rm() {
+            tmp?.removeEventListener("change", () => {
+                tmp?.remove()
+                console.log("removed");
+            })
+        }
+        return new Promise<string>((res, rej) => {
+            setTimeout(() => {
+                rm()
+                rej("timeout")
+            }, 10000);
+            tmp.addEventListener("change", (ev) => {
+                rm()
+                res(tmp.value)
+            })
+        })
     }
 
 
@@ -207,8 +296,8 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
     function handleEditorKeydown(ev: KeyboardEvent) {
         switch (ev.key) {
             case "Enter":
-                // DO_BR()
-                // ev.preventDefault()
+                ev.preventDefault()
+                DO_BR()
                 sendChanges()
                 break;
         }

@@ -92,7 +92,7 @@ function toggleMode(mode: ModeType, override = false) {
     if (route.query.mode !== _mode) navigate(_mode)
 }
 
-const toolbarBtns: { [tag: string]: { icon?: string, label?: string } } = {
+const toolbarBtns: { [tag: string]: { icon: string, label?: string, value?: string } } = {
     STRONG: { icon: "bold" },
     EM: { icon: "italic" },
     U: { icon: "underline" },
@@ -199,7 +199,8 @@ function handleEditorBtnClick(e: Event) {
                             </li>
                             <hr />
                             <li class="oui-overlay-bubble-item">
-                                <anchor class="d-flex align-items-center">
+                                <anchor class="d-flex align-items-center" data-wrap-tag="TEXTBOX"
+                                    @click="handleEditorBtnClick">
                                     <icon name="textbox" class="medium pointer" /> Text box
                                 </anchor>
                             </li>
@@ -267,20 +268,30 @@ function handleEditorBtnClick(e: Event) {
         <!-- <div class="oui-dialog-mask"></div> -->
 
         <div id="editor-root" class="d-flex flex-column">
-            <pcoder-web ref="editorEl" id="editor" class="selectable px-2"
-                @keydown="e => editor?.handleEditorKeydown(e)" v-html="html" @input="handleInput"
-                :contenteditable="$route.query.mode === 'edit'" @click="toggleMode('edit')"></pcoder-web>
+            <pcoder-web ref="editorEl" id="editor" class="selectable px-2" @keydown="e => editor?.handleEditorKeydown(e)"
+                v-html="html" @input="handleInput" :contenteditable="$route.query.mode === 'edit'"
+                @click="toggleMode('edit')"></pcoder-web>
 
             <oui-button-floating class="button-top-right pointer shadowed rounded-3 square" data-fullscreen="show"
                 @click="toggleFullscreen">
                 <Icon name="minimize" class="full smaller button-minimize no-active-bg" />
             </oui-button-floating>
 
-            <div id="toolbar" data-mode-edit="push" class="d-flex justify-content-evenly scroll-x-auto p-1 gap-11">
+            <div id="toolbar" data-mode-edit="push" class="d-flex justify-content-between scroll-x-auto p-1 gap-1">
+                <label data-wrap-tag="TEXT_COLOR" @click="handleEditorBtnClick"
+                    class="editor-btn d-flex align-items-center square rounded-3 square px-1">
+                    <strong class="font-2x px-2">C</strong>
+                    <!-- <icon name="textbox" class="small full no-active-bg full" /> -->
+                    <!-- <input type="color" class="color-input"> -->
+                </label>
+                <label data-wrap-tag="BG_COLOR" @click="handleEditorBtnClick"
+                    class="editor-btn d-flex align-items-center justify-content-center square rounded-3 square px-1">
+                    <strong class="font-2x px-2">B</strong>
+                    <!-- <input type="color" class="color-input"> -->
+                </label>
                 <anchor v-for="(attr, tag) of toolbarBtns" :key="tag" :data-wrap-tag="tag" @click="handleEditorBtnClick"
                     class="editor-btn rounded-3 p-1">
-                    <icon v-if="attr.icon" :name="attr.icon" class="small no-active-bg full" />
-                    <strong v-else>{{ attr.label }}</strong>
+                    <icon :name="attr.icon" class="small no-active-bg full" />
                 </anchor>
             </div>
         </div>
@@ -411,6 +422,15 @@ function handleEditorBtnClick(e: Event) {
     bottom: 0;
     width: 100%;
     background-color: var(--textual-background);
+}
+
+
+.editor-btn .color-input {
+    width: 0px;
+    height: 0px;
+    visibility: hidden;
+    border: none;
+    outline: none;
 }
 
 .editor-btn:active,

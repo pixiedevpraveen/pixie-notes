@@ -48,44 +48,48 @@ onMounted(async () => {
       setting.value = sd
     }
   }
-  handleBack()
+  await CapApp.addListener('backButton', ({ canGoBack }) => {
+    handleBack(canGoBack)
+  })
 })
 
-async function handleBack() {
-  await CapApp.addListener('backButton', ({ canGoBack }) => {
+/**
+ * Handle Back press events: closing drawer, dialog, clearing selection, and also performing onBack activities else nothing found then simply navigator to back or to Home (/)
+ * @param canGoBack boolean 
+ */
+async function handleBack(canGoBack) {
 
-    /* If Drawer or any dialog opened it will close it one by one on each back button click */
-    if (mutation.closeDrawer() || mutation.closeDialog()) return
+  /* If Drawer or any dialog opened it will close it one by one on each back button click */
+  if (mutation.closeDrawer() || mutation.closeDialog()) return
 
-    if (selected.value?.size > 0) { selected.value.clear(); return }
+  if (selected.value?.size > 0) { selected.value.clear(); return }
 
-    /* perform onBack activities one by one on each back button click */
-    for (const [key, act] of activities.onBack.entries()) {
-      act.action()
-      activities.onBack.delete(key)
-      if (act.once) {
-        return
-      }
+  /* perform onBack activities one by one on each back button click */
+  for (const [key, act] of activities.onBack.entries()) {
+    act.action()
+    activities.onBack.delete(key)
+    if (act.once) {
+      return
     }
+  }
 
-    if (useRoute().fullPath === '/') {
-      if (confirmed) {
-        confirmed = true
-        CapApp.exitApp();
-      } else {
-        // handle background process
-        mutation.setMsg("Press back again to exit.")
-        confirmed = true
-        setTimeout(() => {
-          confirmed = false
-        }, 5000);
-      }
-    } else if (!canGoBack) {
-      navigateTo('/', { replace: true });
+  if (useRoute().fullPath === '/') {
+    if (confirmed) {
+      confirmed = true
+      CapApp.exitApp();
     } else {
-      useRouter().back();
+      // handle background process
+      mutation.setMsg("Press back again to exit.")
+      confirmed = true
+      setTimeout(() => {
+        confirmed = false
+      }, 5000);
     }
-  })
+  } else if (!canGoBack) {
+    navigateTo('/', { replace: true });
+  } else {
+    useRouter().back();
+  }
 }
 
 </script>

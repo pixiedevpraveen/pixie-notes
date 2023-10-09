@@ -1,9 +1,3 @@
-export const makeSecret = async (msg: string, high: boolean = false) => {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(msg)
-    return await crypto.subtle.digest(high ? "SHA-256" : "SHA-1", data)
-}
-
 export function strSlice(str: string, end: number, placeholder = '...') {
     return str?.length < end ? str : str?.slice(0, end) + placeholder
 }
@@ -51,4 +45,18 @@ export function getDateOrTime(str: string) {
         }
     }
     catch { return str }
+}
+
+export function emptySelection() {
+    let sel: Selection | null = null
+    if ('getSelection' in window) {
+        sel = window.getSelection()
+    } else if ('getSelection' in document) {
+        sel = document.getSelection()
+    }
+    if (sel && sel.rangeCount) {
+        sel.empty ? sel.empty() : sel?.removeAllRanges()
+        return true
+    }
+    return false
 }

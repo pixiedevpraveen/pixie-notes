@@ -1,7 +1,24 @@
 <script setup lang="ts">
+import { App as CapApp } from "@capacitor/app";
 
 useHead({
     title: "About Us"
+})
+
+const config = useRuntimeConfig()
+
+const appInfo = ref({
+    name: config.public.appName,
+    id: "",
+    build: "",
+    version: config.public.appVersion
+})
+
+onMounted(async () => {
+    try {
+        appInfo.value = await CapApp.getInfo()
+    } catch (er) {
+    }
 })
 
 </script>
@@ -14,14 +31,14 @@ useHead({
             </template>
             <template #header>
                 <div class="d-flex text-center align-items-center">
-                    <icon name="previous" title="Back" class="pointer" @click="$router.back()" />
+                    <backIconButton class="m-2 mx-3" />
                 </div>
             </template>
             <template #interaction>
-                <div class="mt-2">
-                    Application: Pixie
-                    Version: 0.1.5
-                    Author: <a href="https://github.com/pixiedevpraveen" target="_blank">Praveen Yadav</a>
+                <div class="d-flex flex-column align-items-center mt-2">
+                    <h1>{{ appInfo?.name }}</h1>
+                    <span>Version {{ appInfo?.version }}</span>
+                    <span>Author: <a href="https://github.com/pixiedevpraveen" target="_blank">Praveen Yadav</a></span>
                 </div>
             </template>
         </OuiPage>

@@ -1,4 +1,4 @@
-package pixiedevs.pixie.com;
+package pixiedevs.pixienotes.com;
 
 import com.getcapacitor.BridgeActivity;
 

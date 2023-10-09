@@ -5,7 +5,7 @@ export const useStore = () => useState('store', () => ({
     showNavbar: false,
     loading: false,
     message: {
-        show: false, desc: "Welcome",
+        show: false, desc: "Welcome", icon: ""
     },
     drawer: false,
     dialog: new Array<string>(),
@@ -88,7 +88,9 @@ export const useMutation = () => ({
     },
     openDrawer() {
         if (!this.store.value.drawer) {
-            this.store.value.drawer = true
+            this.store.value.drawer = true;
+
+            ((document.querySelector(".oui-drawer__item.router-link-active") ?? document.querySelector(".oui-drawer__item")) as HTMLAnchorElement)?.focus()
         }
     },
     openDialog(name: string) {

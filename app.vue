@@ -20,6 +20,7 @@ useHead({
 
 const mutation = useMutation()
 const setting = useSetting()
+const store = useStore()
 const localStore = useLocalStore()
 let confirmed = false
 
@@ -48,8 +49,8 @@ onMounted(async () => {
       setting.value = sd
     }
   }
-  await CapApp.addListener('backButton', ({ canGoBack }) => {
-    handleBack(canGoBack)
+  await CapApp.addListener('backButton', async ({ canGoBack }) => {
+    await handleBack(canGoBack)
   })
 })
 
@@ -75,7 +76,6 @@ async function handleBack(canGoBack) {
 
   if (useRoute().fullPath === '/') {
     if (confirmed) {
-      confirmed = true
       CapApp.exitApp();
     } else {
       // handle background process
@@ -88,7 +88,7 @@ async function handleBack(canGoBack) {
   } else if (!canGoBack) {
     navigateTo('/', { replace: true });
   } else {
-    useRouter().back();
+    useUI().goBack()
   }
 }
 
@@ -99,10 +99,12 @@ async function handleBack(canGoBack) {
 
 @media screen and (prefers-color-scheme: dark) {
 
-  [class^='icon-']:not(.colored, .grey):not(:active) {
+  [class^='icon-']:not(.colored, .grey),
+  [class^='icon-']:is(:active, :focus-within):not(.no-active-bg) {
     -webkit-filter: invert(100%);
     -ms-filter: invert(100%);
     filter: invert(100%);
   }
+
 }
 </style>

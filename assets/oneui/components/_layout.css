@@ -22,11 +22,11 @@
 }
 
 @media (min-width: 800px) {
-    .oui-page__container {
+    /* .oui-page__container {
         margin: auto 20vw;
         max-width: 60vw;
         width: 100%;
-    }
+    } */
 
     .oui-tab, .oui-toast, .oui-dialog {
         max-width: 60vw;

@@ -47,7 +47,7 @@ function handleSliverScroll() {
         <div class="oui-header" :class="{ 'sticky': headerSticky }">
             <slot name="header" />
             <Transition name="pop">
-                <h2 :class="{ 'visibility-0': !showTitle }">{{ title }}</h2>
+                <h2 class="oui-header-title" :class="{ 'visibility-0': !showTitle }">{{ title }}</h2>
             </Transition>
             <div class="ms-auto d-flex align-items-center">
                 <slot name="header-menu" />
@@ -63,10 +63,15 @@ function handleSliverScroll() {
 </template>
 
 <style>
-.oui-viewing {
-    height: var(--oui-viewing--height) !important;
+:root {
+    --oui-viewing--height: 30vh;
+    --oui-header--height: min(5rem, 15%);
 }
 
+.oui-viewing {
+    height: var(--oui-viewing--height) !important;
+    scroll-snap-align: start;
+}
 
 .hide-viewing>.oui-viewing {
     display: none;
@@ -87,16 +92,14 @@ function handleSliverScroll() {
     align-items: center;
 }
 
-.no-header-title .oui-header h2 {
+:is(html.drawer, .no-header-title) .oui-header-title {
     display: none;
 }
 
 .sticky-header .oui-header {
     position: absolute;
     border-bottom: 1px solid var(--d-grey);
-    box-shadow: 0 4px 0 #ffffff50
-        /* var(--surface-background) */
-    ;
+    box-shadow: 0 4px 0 #ffffff50;
     max-height: none !important;
     min-height: 3rem;
 }
@@ -110,19 +113,15 @@ function handleSliverScroll() {
 }
 
 .oui-page__container {
-    position: relative;
-    --oui-viewing--height: 40%;
-    --oui-header--height: min(5rem, 15%);
-    overflow-y: scroll;
-    height: 100vh;
     background: var(--background);
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: 3.8rem;
 }
 
 .oui-interaction {
-    overflow-y: scroll;
-    min-height: calc(93vh - var(--oui-header--height)) !important;
+    scroll-snap-align: unset;
+    min-height: calc(100vh - 9rem);
     flex: 1;
-    /* scroll-padding-bottom: -25rem; */
     margin-top: var(--oui-header--height);
     padding-bottom: 5rem;
 }

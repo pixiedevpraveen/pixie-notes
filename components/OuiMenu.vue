@@ -5,7 +5,6 @@
         </anchor>
 
         <div class="oui-menu-expand">
-            <!-- ul.oui-bubble.oui-frosted.li.oui-overlay-bubble-item>a[href=#] -->
             <slot>
             </slot>
         </div>
@@ -45,7 +44,7 @@
 }
 
 .oui-overlay-bubble-item {
-    padding: .2rem 0;
+    padding: 0;
 }
 
 .oui-overlay-bubble-item.selected {

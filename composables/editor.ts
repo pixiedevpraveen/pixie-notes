@@ -273,7 +273,6 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
         function rm() {
             tmp?.removeEventListener("change", () => {
                 tmp?.remove()
-                console.log("removed");
             })
         }
         return new Promise<string>((res, rej) => {
@@ -297,6 +296,7 @@ export const useEditor = () => ((editorEl: HTMLDivElement, onChange?: (content: 
         switch (ev.key) {
             case "Enter":
                 ev.preventDefault()
+                DO_BR()
                 DO_BR()
                 sendChanges()
                 break;

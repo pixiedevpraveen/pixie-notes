@@ -5,6 +5,7 @@
     --black: #252525;
     --d-grey: #858585;
     --m-grey: #e6e6e6;
+    --m-grey-low: #97979750;
     --l-grey: #d9d9d9;
     --xl-grey: #F2F2F2;
     --orange: #F56A0D;
@@ -20,6 +21,7 @@
     --primary: var(--blue);
     --secondary: var(--green);
     --active: var(--xl-blue);
+    --icon-active: var(--m-grey-low);
     --inactive: var(--xl-blue);
 
     /*backgrounds*/

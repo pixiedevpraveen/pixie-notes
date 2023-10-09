@@ -4,6 +4,10 @@ import { emailHide, strCamelSplit } from "@/composables/utils";
 import { usePbAuth } from "@/composables/pb";
 import { useAuthUser } from '@/composables/authUser';
 
+useHead({
+    title: "Settings"
+})
+
 const localStore = useLocalStore()
 const setting = useSetting()
 const store = useStore()
@@ -58,7 +62,7 @@ async function clearCache(key: string) {
             </template>
             <template #header>
                 <div class="d-flex text-center align-items-center scroll-y-auto">
-                    <icon name="previous" class="pointer m-2 mx-3" @click="$router.back()" />
+                    <backIconButton class="m-2 mx-3" />
                 </div>
             </template>
             <template #interaction>
@@ -70,14 +74,13 @@ async function clearCache(key: string) {
                     <div v-for="(v, k) in setting" :key="k" class="mx-3">
                         <!-- <oui-json-input :name="k" :value="setting[k]" /> -->
                         <template v-if="/* v?.hidden &&  */k.startsWith('_') && !store.dev"></template>
-                        <oui-switch v-else-if="(/* v.__type ||  */typeof v.value) === 'boolean'"
-                            :checked="setting[k].value" :id="k" :label="strCamelSplit(k.replace('_', ''))"
-                            labelClass="text-upper-first"
-                            @change="e => (setting[k].value as unknown as boolean) = e.target.checked"
+                        <oui-switch v-else-if="(/* v.__type ||  */typeof v.value) === 'boolean'" :checked="setting[k].value"
+                            :id="k" :label="strCamelSplit(k.replace('_', ''))" labelClass="text-upper-first"
+                            @change="e => v.readonly || ((setting[k].value as unknown as boolean) = e.target.checked)"
                             :readonly="v.readonly"></oui-switch>
                         <oui-input type="text" v-else-if="(typeof v.value === 'string')" :value="(v.value as string)"
                             :id="k" :label="strCamelSplit(k.replace('_', ''))" labelClass="text-upper-first"
-                            @change="(e) => v.readonly || ((setting[k].value as unknown as string) = e.target.value)"
+                            @change="e => v.readonly || ((setting[k].value as unknown as string) = e.target.value)"
                             :readonly="v.readonly"></oui-input>
                     </div>
                     <oui-list-card title="App Data" alt="user avatar" class="pointer shadowed" :text="['Notes, Setting']"

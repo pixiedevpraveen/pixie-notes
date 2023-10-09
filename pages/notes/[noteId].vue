@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Note } from '@/models/note';
-import { getNewNote, updatableFields } from '@/composables/noteUtils';
+import { getNewNote } from '@/composables/noteUtils';
 import { NotesService } from '@/composables/dbServices';
-
 
 const mutation = useMutation()
 const route = useRoute()
@@ -11,44 +10,11 @@ const updatedFields = new Set<keyof Note>()
 const noteId = route.params.noteId
 const KEY = 'note.' + noteId
 const noteData = useState<Note>(KEY)
+const updatedNoteId = useState("updatedNoteId")
 const content = ref('')
 const status = ref<'pending' | 'done' | 'error'>('pending')
 
 let isNew = false
-let contentTimeoutId: ReturnType<typeof setTimeout>
-let noteTimeoutId: ReturnType<typeof setTimeout>
-
-async function getNote() {
-    const [n, c] = await Promise.all([NotesService.getNoteById(noteId), NotesService.getNoteContentById(noteId)])
-
-    if (n) noteData.value = n
-    if (c) content.value = c.content || ''
-}
-
-async function createNote() {
-    const note = { ...noteData.value, content: content.value }
-    if (!note.title && !note.content) {
-        mutation.setMsg("Nothing to save. Note discarted!")
-        return
-    }
-    const res = await NotesService.createNote(note)
-    if (!res || !res[0] || !res[1])
-        mutation.setMsg("Unable to save Note!")
-}
-
-async function updateNote(saveNote = true) {
-    let res
-    if (saveNote)
-        res = await NotesService.saveNoteFields({ ...noteData.value }, updatedFields)
-        // res = await NotesService.saveNote({ ...noteData.value }, false)
-    else
-        res = await NotesService.saveNoteContent(noteData.value.id, content.value)
-
-    if (!res) {
-        mutation.setMsg("Unable to save Note!")
-    } else
-        updatedFields.clear()
-}
 
 onMounted(async () => {
     if (route.query.create === "true") {
@@ -59,12 +25,66 @@ onMounted(async () => {
     else
         await getNote()
     status.value = noteData.value ? "done" : "error"
+    updatedNoteId.value = undefined
+
+    window.addEventListener('visibilitychange', async () => {
+        if (document.hidden)
+            await handleSaveCreate()
+    }, false)
 })
 
 onBeforeUnmount(async () => {
-    if (!noteData.value) return
-    if (isNew) await createNote()
+    if (isNew || updatedFields.size) updatedNoteId.value = noteData.value.id
+    await handleSaveCreate()
+    window.removeEventListener("visibilitychange", () => { })
 })
+
+async function handleSaveCreate() {
+    if (!noteData.value) return
+    if (isNew)
+        await createNote()
+    else
+        await updateNote()
+}
+
+async function getNote() {
+    const [n, c] = await Promise.all([NotesService.getNoteById(noteId), NotesService.getNoteContentById(noteId)])
+
+    if (n) noteData.value = n
+    if (c) content.value = c.content || ''
+}
+
+async function createNote() {
+    isNew = false
+    const note = { ...noteData.value, content: content.value }
+    if (!note.title && !note.content) {
+        mutation.setMsg("Nothing to save. Note discarted!")
+        return
+    }
+    const res = await NotesService.createNote(note)
+    if (!res || !res[0] || !res[1])
+        mutation.setMsg("Unable to save Note!")
+}
+
+async function updateNote() {
+    let res, res2
+
+    if (updatedFields.has("content")) {
+        res2 = await NotesService.saveNoteContent(noteData.value.id, content.value)
+        if (res2) {
+            updatedFields.delete("content")
+        }
+    }
+
+    if (updatedFields.size) {
+        res = await NotesService.saveNoteFields({ ...noteData.value }, updatedFields)
+        if (res) {
+            updatedFields.clear()
+        }
+        else
+            mutation.setMsg("Unable to save Note!")
+    }
+}
 
 function contentUpdate() {
 
@@ -73,24 +93,15 @@ function contentUpdate() {
     content.value = str
 
     if (isNew) return
-
-    clearTimeout(contentTimeoutId)
-    contentTimeoutId = setTimeout(async () => {
-        await updateNote(false)
-    }, 1000);
+    updatedFields.add("content")
 }
 
 function handleFormChange(e: Event) {
     if (isNew) return
 
     const field = (e.target as HTMLInputElement).name as keyof Note
-    console.log(field);
 
-    if (updatableFields.has(field)) updatedFields.add(field)
-    clearTimeout(noteTimeoutId)
-    noteTimeoutId = setTimeout(async () => {
-        await updateNote()
-    }, 1000);
+    updatedFields.add(field)
 }
 </script>
 
@@ -101,7 +112,7 @@ function handleFormChange(e: Event) {
         <Protected id="note-lock" :locked="noteData.is_locked">
 
             <Head>
-                <Title>{{ noteData?.title }}</Title>
+                <Title>{{ noteData?.title || 'Untitled' }}</Title>
             </Head>
 
             <form @change="handleFormChange">
@@ -113,7 +124,7 @@ function handleFormChange(e: Event) {
     </div>
     <div v-else class="p-absolute text-center" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
         <h1>ERROR 404 Note not found!</h1>
-        <button class="oui-button" @click="$router.replace('/notes')">Back</button>
+        <button class="oui-button" @click="useUI().goBack" title="Back or to Home">Back</button>
     </div>
 </template>
 

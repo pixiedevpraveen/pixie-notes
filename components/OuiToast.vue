@@ -1,6 +1,7 @@
 <template>
-    <div class="oui-toast">
-        <span class="oui-toast-text" v-if="store.message.show">{{ store.message.desc }}</span>
+    <div class="oui-toast py-1 p-2" v-show="store.message.show">
+        <Icon :name="store.message.icon||'note'" class="smaller grey full m-0" />
+        <span class="oui-toast-text p-1">{{ store.message.desc }}</span>
     </div>
 </template>
 

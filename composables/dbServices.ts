@@ -1,6 +1,6 @@
 import { Note, Content } from "@/models/note";
 import { Models } from "./orm";
-import { BaseSearchActionsInterface, BaseWriteActionsInterface, TransactionModes } from "indexeddb-orm/dist/models/model.interface";
+import { BaseSearchActionsInterface, BaseWriteActionsInterface } from "indexeddb-orm/dist/models/model.interface";
 
 export class NotesService {
 
@@ -35,11 +35,16 @@ export class NotesService {
         const models = await this.getModels()
         const { content, ...data } = note
 
-        note.updated = new Date().toISOString()
+        if (data.title) {
+            data.updated = new Date().toISOString()
+        }
 
         const res = await models.notes.save(note.id, data, deepMerge)
+
+        const updatedKeys = Object.keys(note)
+
         if (res)
-            this.createSyncRecord(models, note.id as string, "update", Object.keys(note))
+            this.createSyncRecord(models, note.id as string, "update", updatedKeys)
         return res
     }
 
@@ -55,13 +60,15 @@ export class NotesService {
     static async saveNotesFieldByIds(ids: Note['id'][], field: keyof Note, value: unknown, ifValue?: unknown) {
         const models = await this.getModels()
         const data: Record<string, unknown> = {}
-        data.updated = new Date().toISOString()
+        if (field === "title" || field === "content")
+            data.updated = new Date().toISOString()
         data[field] = value
         let query: any = models.notes.whereIndexIn("id", ids)
         if (ifValue) query = (query.where(field, ifValue) as BaseWriteActionsInterface)
         const res = await (query as BaseWriteActionsInterface).update(data, true)
-        if (res)
-            this.createSyncRecord(models, ids.join(','), "update", [field])
+
+        // TODO: handle multiple ids
+        if (res) this.createSyncRecord(models, ids.join(','), "update", [field])
         return res
     }
 
@@ -70,14 +77,33 @@ export class NotesService {
         const updated = new Date().toISOString()
 
         const res = await models.contents.save(id, { content, id, table: "notes", updated: updated }, deepMerge)
-        if (res)
+        if (res) {
             this.createSyncRecord(models, id, "update", ["content"])
+            this.saveNote({ id, updated } as Note)
+        }
         return res
     }
 
     private static async createSyncRecord(models: Awaited<ReturnType<typeof this.getModels>>, tableId: Note['id'], action: "create" | "update" | "delete", fields: string[] = []) {
-        setTimeout(() => {
-            models.sync.create({ action, table: "notes", tableId, fields: fields.join(',') })
+        setTimeout(async () => {
+
+            const data: Record<string, unknown> = { tableId, action, table: "notes" }
+            fields.forEach(f => data[f] = 1)
+            delete data.id
+
+            switch (action) {
+                case "update":
+                    data.updated = new Date().getTime()
+                    const record = await (models.sync.whereIndex("id-action", [tableId, action]) as BaseWriteActionsInterface).update(data, true)
+
+                    if (record)
+                        break;
+
+                case "create":
+                case "delete":
+                    await models.sync.create(data)
+                    break;
+            }
         }, 10);
     }
 

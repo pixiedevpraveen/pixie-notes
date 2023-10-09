@@ -40,6 +40,7 @@ const setting = useSetting()
 const search = useState<string>('note-search', route.query.search)
 
 const editorEl = ref<HTMLDivElement>()
+const contextmenu = ref<'select' | 'image' | ''>('')
 
 function getEditorEl() {
     return document.querySelector("#editor") as HTMLDivElement
@@ -60,12 +61,12 @@ let contentTimeoutId: ReturnType<typeof setTimeout>
 function sendContent() {
     clearTimeout(contentTimeoutId)
     contentTimeoutId = setTimeout(async () => {
-        console.log("contentEditor: content changes");
+        // console.log("contentEditor: content changes");
         if (editorEl.value) {
             update(editorEl.value.innerHTML)
-            console.log("content sent");
+            // console.log("content sent");
         } else {
-            console.log(editorEl.value);
+            // console.log(editorEl.value);
         }
     }, 1000);
 }
@@ -76,6 +77,8 @@ function handleInput(/* e: Event */) {
 
 function toggleMode(mode: ModeType, override = false) {
     let _mode = route.query.mode
+    let query = "editor"
+
     switch (mode) {
         case 'edit':
             if (override || route.query.mode !== 'lock') _mode = 'edit'
@@ -87,9 +90,15 @@ function toggleMode(mode: ModeType, override = false) {
 
         case 'search':
             _mode = 'search'
+            query = "note-search"
             break;
     }
-    if (route.query.mode !== _mode) navigate(_mode)
+    if (route.query.mode !== _mode) {
+        navigate(_mode)
+        setTimeout(() => {
+            document.getElementById(query)?.focus()
+        }, 1000);
+    }
 }
 
 const toolbarBtns: { [tag: string]: { icon: string, label?: string, value?: string } } = {
@@ -111,6 +120,17 @@ function handleEditorBtnClick(e: Event) {
     else console.log(editor);
 }
 
+function showCtx(e: Event) {
+    e.preventDefault();
+    (e.target as HTMLDivElement)
+    contextmenu.value = 'select'
+}
+
+function ctxAction(action: string) {
+    console.log(action);
+    contextmenu.value = ''
+}
+
 </script>
 
 <template>
@@ -118,7 +138,7 @@ function handleEditorBtnClick(e: Event) {
 
         <div class="oui-header sticky px-2 py-1">
             <div class="oui-header-expanded flex-fill">
-                <icon name="previous" class="pointer" @click="$router.back()" data-expand="rotate-90" />
+                <backIconButton data-expand="rotate-90" />
                 <div class="ms-auto" data-expand="show">
                     <anchor v-if="type === 'note'" @click="data.is_favourite = !data.is_favourite">
                         <input type="checkbox" v-model="data.is_favourite" name="is_favourite" class="hidden">
@@ -128,10 +148,10 @@ function handleEditorBtnClick(e: Event) {
                 </div>
                 <input v-show="$route.query.mode !== 'search'"
                     class="oui-input-title flex-fill bg-transparent outline-0 py-2 border-0 font-2x font-bold" type="text"
-                    v-model="data.title" name="title" placeholder="Untitled">
+                    v-model="data.title" name="title" placeholder="Untitled" maxlength="120">
                 <div class="flex-fill" data-expand="show">
                     <input v-if="type === 'note'" class="bg-transparent outline-0 py-2 border-0 font-3x" type="text"
-                        name="folder" placeholder="Folders" v-model="data.folder">
+                        name="folder" placeholder="Folder" v-model="data.folder" maxlength="120" pattern="[a-zA-Z0-9]+">
                     <table class="mb-2">
                         <tbody>
                             <tr v-if="data.updated">
@@ -151,7 +171,7 @@ function handleEditorBtnClick(e: Event) {
             <div v-show="$route.query.mode === 'search'" class="flex-fill">
                 <div class="d-flex text-center justify-content-between align-items-center">
                     <input class="bg-transparent outline-0 py-2 border-0 font-2x font-bold" type="search" v-model="search"
-                        placeholder="Search">
+                        placeholder="Search" id="note-search">
                     <div>
                         <anchor v-show="$route.query.mode !== 'edit'">
                             <icon name="previous" class="grey pointer rotate--90" />
@@ -296,6 +316,11 @@ function handleEditorBtnClick(e: Event) {
             </div>
         </div>
 
+        <div id="editor-contextmenu" class="d-flex rounded overflow-hidden" v-show="contextmenu">
+            <button class="p-2 border-0" v-if="contextmenu === 'select'" v-for="action in ['copy', 'select all', 'share']"
+                :key="action" @click="ctxAction(action)">{{ action }}</button>
+        </div>
+
     </div>
 </template>
 
@@ -321,10 +346,17 @@ function handleEditorBtnClick(e: Event) {
     --editor-height: 100vh;
     min-height: var(--editor-height);
     outline: transparent;
-    padding-top: 3.5rem;
+    /* padding-top: 3.5rem; */
     padding-bottom: 5rem;
     overflow-y: scroll !important;
     max-height: 100vh;
+}
+
+#editor-contextmenu {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 6000;
 }
 
 #editor *:focus-within {

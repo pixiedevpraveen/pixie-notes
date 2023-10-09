@@ -2,7 +2,6 @@
 import { getDateOrTime } from '@/composables/utils';
 import { Note } from '@/models/note';
 import { NotesService } from '@/composables/dbServices';
-
 useHead({
     title: "Notes"
 })
@@ -10,11 +9,16 @@ useHead({
 const { category } = defineProps<{ category: "all" | "favourite" | "locked"/*  | "bin" */ }>()
 
 const route = useRoute()
-const notes = ref<Note[]>([])
+const notes = useState<Note[]>('notes', () => [])
+const updatedNoteId = useState<string>("updatedNoteId")
+const prevCategory = useState<typeof category>("prevCategory")
 const title = ref("All notes")
 const pending = ref(false)
+const page = useState('notesPage', () => 1)
 let attr: keyof Note
 let value: unknown
+let obs: IntersectionObserver
+const MAX_NOTE_PER_PAGE = 16
 
 const selected = useState('selected', () => new Set<Note['id']>())
 const lockSelected = ref(new Set<string>())
@@ -24,7 +28,6 @@ const orderOptions = new Map<keyof Note, string>([["title", "Title"], ["created"
 const search = useState('search', () => route.query.search && route.query.q ? route.query.q : '')
 
 onMounted(async () => {
-
     switch (category) {
         case "favourite":
             attr = "is_favourite"
@@ -43,27 +46,67 @@ onMounted(async () => {
         //     break;
     }
 
-    await updateNotes()
-
     const od = localStorage.getItem("notes.order." + category)
     if (od) {
         order.value = JSON.parse(od)
+    }
+
+    let update = true
+    if (notes.value.length) {
+        update = false
+
+        if (updatedNoteId.value) {
+            const idx = notes.value.findIndex((note) => note.id === updatedNoteId.value)
+            const note = await NotesService.getNoteById(updatedNoteId.value)
+            if (note && note.is_active) {
+                if (attr && note[attr] !== value) return
+
+                if (idx >= 0)
+                    notes.value[idx] = note
+                else
+                    notes.value.push(note)
+            }
+        }
+    }
+
+    if (update || category !== prevCategory.value) {
+        await updateNotes()
     }
 
     window.addEventListener("popstate", (ev) => {
         if (!route.query.search && search.value)
             search.value = ''
     })
+
+    handleNotesEnd()
 })
 
 onBeforeUnmount(() => {
+    prevCategory.value = category
     window.removeEventListener("popstate", (ev) => { })
 })
 
+onUnmounted(() => {
+    obs?.disconnect()
+})
+
+function handleNotesEnd() {
+    const el = document.getElementById("note-end")
+    if (!el) return
+
+    obs = new IntersectionObserver((els) => {
+        if (page.value * MAX_NOTE_PER_PAGE <= notes.value.length) page.value++
+
+    }, { threshold: [.4] })
+
+    obs.observe(el)
+}
+
 async function updateNotes() {
-    pending.value = true
     notes.value = await NotesService.getActiveNotesListWhere(attr, value)
-    pending.value = false
+    setTimeout(() => {
+        sessionStorage.setItem("notes." + category, JSON.stringify(notes.value))
+    }, 500);
 }
 
 function toggleSelect(note: Note) {
@@ -87,7 +130,10 @@ function handleClick(e: Event, note: Note) {
 }
 
 const filteredNotes = computed(() => {
-    let fnotes = notes.value.sort((a, b) => {
+    let fnotes: Note[] = []
+    if (!notes.value.length) return []
+
+    fnotes = notes.value.sort((a, b) => {
         const ai = order.value.asc ? a : b
         const bi = order.value.asc ? b : a
         let av = (order.value.pinFav && ai.is_favourite) ? 10000000000 : 0
@@ -108,11 +154,22 @@ const filteredNotes = computed(() => {
     return fnotes
 })
 
+function paginatedPage() {
+    if (!page.value) return []
+    return filteredNotes.value.slice(0, page.value * MAX_NOTE_PER_PAGE)
+}
+
 let searchTimeoutId: ReturnType<typeof setTimeout>
 function handleSearch(e: Event) {
     clearTimeout(searchTimeoutId)
     searchTimeoutId = setTimeout(() => {
         search.value = (e.target as HTMLInputElement).value
+    }, 200);
+}
+function openSearch() {
+    navigateTo({ query: { search: 'search' } })
+    setTimeout(() => {
+        document.getElementById("notes-search")?.focus()
     }, 500);
 }
 
@@ -151,55 +208,52 @@ function hasNonFavourite() {
     return favSelected.value.size !== selected.value.size
 }
 
+async function updateField(field: keyof Note, value: unknown, where?: unknown) {
+    const res = await NotesService.saveNotesFieldByIds(Array.from(selected.value), field, value, where)
+
+    if (res) {
+        notes.value.forEach(note => {
+            if (selected.value.has(note.id) && (!where || note[field] === where)) {
+                (note[field] as any) = value
+            }
+        })
+        clearAll()
+    }
+}
+
 /* menu actions */
 function addAll() {
-    if (selected.value.size === notes.value.length) clearAll(false)
+    if (selected.value.size === notes.value.length) clearAll()
     else selected.value = new Set(notes.value.map(n => n.id))
 }
 
 const moveAll: MenuAction = async () => {
     const folder = prompt("Enter folder path", notes.value[0].folder)
     if (folder === null) return
-    const res = await NotesService.saveNotesFieldByIds(Array.from(selected.value), "folder", folder)
-    if (res)
-        clearAll()
+    updateField("folder", folder)
 }
 
 const lockAll: MenuAction = async () => {
     const hasUnlock = hasUnlocked()
-    const res = await NotesService.saveNotesFieldByIds(Array.from(selected.value), "is_locked", hasUnlock, !hasUnlock)
-
-    if (res) {
-        clearAll()
-    }
+    updateField("is_locked", hasUnlock, !hasUnlock)
 }
 
 const starAll: MenuAction = async () => {
     const hasNonFav = hasNonFavourite()
-    const res = await NotesService.saveNotesFieldByIds(Array.from(selected.value), "is_favourite", hasNonFav, !hasNonFav)
-
-    if (res) {
-        clearAll()
-    }
+    updateField("is_favourite", hasNonFav, !hasNonFav)
 }
 
 const shareAll: MenuAction = async () => {
-    clearAll(false)
+    clearAll()
 }
 
 const deleteAll: MenuAction = async () => {
     if (!confirm(`Confirm delete ${selected.value.size} note${selected.value.size < 2 ? '' : 's'}?`)) return
 
-    const res = await NotesService.saveNotesFieldByIds(Array.from(selected.value), "is_active", !notes.value[0].is_active, notes.value[0].is_active)
-
-    if (res) {
-        clearAll()
-    }
+    updateField("is_active", !notes.value[0].is_active, notes.value[0].is_active)
 }
 
-async function clearAll(update = true) {
-    if (update)
-        await updateNotes()
+async function clearAll() {
     selected.value.clear()
     lockSelected.value.clear()
     favSelected.value.clear()
@@ -226,15 +280,16 @@ async function clearAll(update = true) {
                         </div>
                     </anchor>
                     <anchor>
-                        <icon name="previous" v-show="!selected.size" class="pointer m-2 mx-3" @click="$router.back()" />
+                        <icon name="menu" v-show="!selected.size" class="medium pointer m-2 mx-3"
+                            @click="useMutation().openDrawer()" />
                     </anchor>
-                    <input v-show="$route.query.search" autofocus
+                    <input v-show="$route.query.search"
                         class="bg-transparent outline-0 py-2 me-3 border-0 font-2x font-bold flex-fill" type="search"
-                        @input="handleSearch" :value="search" placeholder="Search">
+                        @input="handleSearch" :value="search" placeholder="Search" id="notes-search">
                 </div>
             </template>
             <template #header-menu v-if="!$route.query.search">
-                <anchor @click="navigateTo({ query: { search: 'search' } })">
+                <anchor @click="openSearch">
                     <icon name="search" v-show="!selected.size" class="pointer m-0" />
                 </anchor>
                 <client-only>
@@ -242,15 +297,15 @@ async function clearAll(update = true) {
                         <template #summary>
                             <icon name="vertical_ellipsis" class="me-2" title="Menu" />
                         </template>
-                        <ul class="oui-bubble oui-frosted">
-                            <li class="oui-overlay-bubble-item"
+                        <ul class="oui-bubble oui-frosted m-0 p-3">
+                            <li class="oui-overlay-bubble-item p-0"
                                 @click="selected.size ? false : (selected.add(notes[0].id))">
                                 <anchor>Edit</anchor>
                             </li>
-                            <li class="oui-overlay-bubble-item">
+                            <li class="oui-overlay-bubble-item p-0">
                                 <anchor>View</anchor>
                             </li>
-                            <li class="oui-overlay-bubble-item" @click="order.pinFav = !order.pinFav">
+                            <li class="oui-overlay-bubble-item p-0" @click="order.pinFav = !order.pinFav">
                                 <anchor>{{ order.pinFav ? 'Unpin favourites from' : 'Pin favourites to' }} top</anchor>
                             </li>
                         </ul>
@@ -264,8 +319,8 @@ async function clearAll(update = true) {
                             <template #summary>
                                 <span class="p-2 rounded-3 text-secondary">{{ orderOptions.get(order.by) }}</span>
                             </template>
-                            <ul class="oui-bubble oui-frosted">
-                                <li class="oui-overlay-bubble-item text-secondary d-flex align-items-center ps-2"
+                            <ul class="oui-bubble oui-frosted m-0 p-3">
+                                <li class="oui-overlay-bubble-item text-secondary d-flex align-items-center p-0 ps-1"
                                     v-for="[option, text] in orderOptions" :key="option"
                                     :class="{ 'selected': order.by === option }" @click="order.by = option">
                                     {{ text }}
@@ -282,10 +337,10 @@ async function clearAll(update = true) {
 
                 <div class="mt-2" v-if="notes?.length">
 
-                    <table>
+                    <table class="w-100">
                         <tbody>
                             <TransitionGroup name="bounce">
-                                <NuxtLink v-for="note in filteredNotes" :key="note.id"
+                                <NuxtLink v-for="note in paginatedPage()" :key="note.id"
                                     @contextmenu.prevent="selected.size || toggleSelect(note)"
                                     @click="e => handleClick(e, note)"
                                     :to="selected.size ? undefined : '/notes/' + note.id">
@@ -314,6 +369,7 @@ async function clearAll(update = true) {
                         </tbody>
                     </table>
                 </div>
+                <div id="note-end" style="height: 5rem; width: 1rem; transform: translateY(-100%);"></div>
 
             </template>
             <template #sticky-bottom>
@@ -344,7 +400,7 @@ async function clearAll(update = true) {
                 </Transition>
                 <NuxtLink to="/notes/new?create=true">
                     <oui-button-floating v-show="!selected.size" class="button-bottom-right pointer shadowed rounded-3 p-1">
-                        <icon name="edit" class="no-active-bg" />
+                        <icon name="edit" class="no-active-bg colored orange" />
                     </oui-button-floating>
                 </NuxtLink>
             </template>

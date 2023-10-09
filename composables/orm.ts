@@ -5,7 +5,7 @@ import { Model } from "indexeddb-orm/dist/models/model";
 export const useOrm = (dbName: string) => {
     return new Connector({
         name: dbName,
-        version: 2,
+        version: 1,
         tables: [
             {
                 name: 'notes',
@@ -36,61 +36,6 @@ export const useOrm = (dbName: string) => {
                     {
                         name: 'is_favourite',
                         index: 'is_favourite',
-                        attributes: {
-                            unique: false
-                        }
-                    },
-                    {
-                        name: 'folder',
-                        index: 'folder',
-                        attributes: {
-                            unique: false
-                        }
-                    },
-                    {
-                        name: 'keywords',
-                        index: 'keywords',
-                        attributes: {
-                            unique: false
-                        }
-                    }
-                ]
-            },
-            {
-                name: 'pages',
-                primary: 'id',
-                columns: [
-                    {
-                        name: 'page_type',
-                        index: 'page_type',
-                        attributes: {
-                            unique: false
-                        }
-                    },
-                    {
-                        name: 'slug',
-                        index: 'slug',
-                        attributes: {
-                            unique: true
-                        }
-                    },
-                    {
-                        name: 'is_active',
-                        index: 'is_active',
-                        attributes: {
-                            unique: false
-                        }
-                    },
-                    {
-                        name: 'is_indexed',
-                        index: 'is_indexed',
-                        attributes: {
-                            unique: false
-                        }
-                    },
-                    {
-                        name: 'is_public',
-                        index: 'is_public',
                         attributes: {
                             unique: false
                         }
@@ -162,7 +107,7 @@ export const useOrm = (dbName: string) => {
         ]
     })}
 
-export type Models = "notes" | "pages" | "contents" | "sync"
+export type Models = "notes" | "contents" | "sync"
 
 export type ModelKeys = ModelKeysInterface<Models>
 

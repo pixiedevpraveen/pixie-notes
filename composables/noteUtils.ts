@@ -10,7 +10,7 @@ export function getNewNote() {
         created: t.toISOString(),
         updated: t.toISOString(),
         folder: "",
-        id: "new-" + crypto.randomUUID(),
+        id: "new-" + t.getTime(),
         is_active: true,
         is_favourite: false,
         is_locked: false,

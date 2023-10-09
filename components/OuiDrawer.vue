@@ -2,12 +2,13 @@
     <Transition name="opacity">
         <div class="oui-dialog-mask" v-show="store.drawer"></div>
     </Transition>
-    <div class="oui-drawer" :class="{ 'show': store.drawer }" @click="toggle" data-toggle>
+    <div class="oui-drawer" @click="toggle" data-toggle>
+        <Html :class="{drawer: store.drawer}"></Html>
         <div class="oui-drawer__body" v-bind="$attrs">
             <div class="oui-drawer__header justify-content-end p-3" data-toggle>
                 <Icon name="settings" class="pointer grey route" @click="navigateTo('/settings')" data-toggle></Icon>
             </div>
-            <div class="oui-drawer__items">
+            <div class="oui-drawer__items gap-1">
                 <NuxtLink v-for="route in routes" :key="route[1]" :to="route[1]" class="oui-drawer__item route" data-toggle>
                     <icon :name="route[2] || 'folder'" class="no-active-bg mx-2" data-toggle /> {{ route[0] }}
                 </NuxtLink>
@@ -20,15 +21,11 @@
 
 <script setup>
 const store = useStore()
-const routes = [["Home", "/", "home"], ["Notes", "/notes", "note"]/* , ["Pages", "/pages", "file-text"] */, ["About", "/about", "info"], ['Favourite Notes', '/fav-notes', 'star'], ['Locked Notes', '/locked-notes', 'lock']]
-// const notesData = useState('notes')
+const routes = [["All Notes", "/", "note"], ['Favourite notes', '/fav-notes', 'star'], ['Locked notes', '/locked-notes', 'lock'], ["About", "/about", "info"]]
 
 function toggle(e) {
     if (e.target.dataset.toggle !== undefined) store.value.drawer = !store.value.drawer
 }
-// onMounted(() => {
-//     handleSwipe()
-// })
 
 let touchstarX = 0
 let touchendX = 0
@@ -50,34 +47,29 @@ function handleSwipe() {
 </script>
 
 <style>
-html,
-body {
+html.drawer {
     overflow: hidden !important;
 }
 
 .oui-drawer {
-    position: absolute;
+    position: fixed;
     width: 100vw;
     height: 100vh;
-    left: 0;
-    top: 0;
-    padding-top: 1px;
-    padding-bottom: 1px;
+    inset: 0;
+    padding: 1px 0;
     z-index: 2001;
     transform: translateX(-99%);
     transition: var(--transition-fast);
 }
 
 .oui-drawer~.page {
-    transition: var(--transition-fast);
-    overflow: hidden;
+    transition: transform var(--transition-fast);
 }
 
-.oui-drawer.show~.page {
-    transform: translateX(80vw);
+html.drawer .oui-drawer {
+    transform: none;
 }
-
-.oui-drawer.show {
+html.drawer .oui-drawer {
     transform: none;
 }
 
@@ -111,8 +103,12 @@ body {
 
 .oui-drawer__item:is(:active, .router-link-active, :focus) {
     outline: transparent;
-    font-weight: bolder;
-    background: #97979750;
+    background: var(--m-grey-low);
     border-color: var(--active);
 }
+
+.oui-drawer__item.router-link-active {
+    font-weight: bolder;
+}
+
 </style>

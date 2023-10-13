@@ -82,7 +82,7 @@ html.drawer .oui-drawer {
     background-color: var(--surface-background);
     border-radius: 0 calc(var(--border-radius) * 1.5) calc(var(--border-radius) * 1.5) 0;
     height: calc(100% - 2px);
-    width: 80vw;
+    width: min(80vw, 25rem);
     border: 1px solid var(--border-surface);
     box-shadow: 0px 2px 3px 0px var(--border-surface);
 }

@@ -24,8 +24,8 @@ const selected = useState('selected', () => new Set<Note['id']>())
 const lockSelected = ref(new Set<string>())
 const favSelected = ref(new Set<string>())
 const order = ref<{ by: keyof Note, asc: boolean, pinFav: boolean }>({ by: "updated", asc: false, pinFav: true })
-const orderOptions = new Map<keyof Note, string>([["title", "Title"], ["created", "Date created"], ["updated", "Date updated"]])
-const search = useState('search', () => route.query.search && route.query.q ? route.query.q : '')
+const orderOptions = new Map<typeof order.value.by, string>([["title", "Title"], ["created", "Date created"], ["updated", "Date updated"]])
+const search = useState('search', () => route.query.q || '')
 
 onMounted(async () => {
     switch (category) {
@@ -129,43 +129,57 @@ function handleClick(e: Event, note: Note) {
     }
 }
 
-const filteredNotes = computed(() => {
+const sortedNotes = computed(() => {
     let fnotes: Note[] = []
     if (!notes.value.length) return []
 
     fnotes = notes.value.sort((a, b) => {
-        const ai = order.value.asc ? a : b
-        const bi = order.value.asc ? b : a
-        let av = (order.value.pinFav && ai.is_favourite) ? 10000000000 : 0
-        let bv = (order.value.pinFav && bi.is_favourite) ? 10000000000 : 0
+        const [ai, bi] = order.value.asc ? [a, b] : [b, a]
 
-        switch (order.value.by) {
-            case "created":
-                return (new Date(ai.created).getTime() - new Date(bi.created).getTime()) + (av - bv) * (order.value.asc ? -1 : 1)
-            case "title":
-                return ai.title.localeCompare(bi.title) + (av - bv) * (order.value.asc ? -1 : 1)
+        const [av, bv] = order.value.pinFav ? [ai.is_favourite ? 10000000000 : 0, bi.is_favourite ? 10000000000 : 0] : [0, 0]
+
+        let cmp = 0
+        const by = order.value.by
+
+        if (typeof ai[by] === "number" && typeof bi[by] === "number") {
+            cmp = Number(ai[by]) - Number(bi[by])
         }
-        return (new Date(ai.updated).getTime() - new Date(bi.updated).getTime()) + (av - bv) * (order.value.asc ? -1 : 1)
-    })
 
-    if (search.value)
-        return fnotes.filter(n => n.title.search(search.value) !== -1)
+        else if (/updated|created/.test(by))
+            cmp = (new Date(ai[by as "updated" | "created"]).getTime() - new Date(bi[by as "updated" | "created"]).getTime())
+
+        else if (typeof ai[by] === "string") {
+            cmp = ai.title.localeCompare(bi.title)
+        }
+
+        return cmp + (av - bv) * (order.value.asc ? -1 : 1)
+    })
 
     return fnotes
 })
 
-function paginatedPage() {
-    if (!page.value) return []
-    return filteredNotes.value.slice(0, page.value * MAX_NOTE_PER_PAGE)
-}
+const searchedNotes = computed(() => {
+    return search.value ? sortedNotes.value.filter(n => {
+        let qi = 0
+        for (let i = 0; qi < search.value.length && i < n.title.length; i++) {
+            if (n.title[i].toLowerCase() === search.value[qi].toLowerCase())
+                qi++
+        }
+        return qi === search.value.length
+    }) : sortedNotes.value
+})
+
+const paginatedNotes = computed(() => page.value ? searchedNotes.value.slice(0, page.value * MAX_NOTE_PER_PAGE) : [])
 
 let searchTimeoutId: ReturnType<typeof setTimeout>
 function handleSearch(e: Event) {
     clearTimeout(searchTimeoutId)
     searchTimeoutId = setTimeout(() => {
         search.value = (e.target as HTMLInputElement).value
-    }, 200);
+        navigateTo({ query: { ...route.query, q: search.value } }, { replace: true })
+    }, 500);
 }
+
 function openSearch() {
     navigateTo({ query: { search: 'search' } })
     setTimeout(() => {
@@ -265,7 +279,7 @@ async function clearAll() {
         <loader v-show="pending" />
 
         <OuiPage :title="selected.size ? `${selected.size} Selected` : 'Notes'"
-            :meta="selected.size ? '' : (filteredNotes.length ?? 0) + ' notes'"
+            :meta="selected.size ? '' : (sortedNotes.length ?? 0) + ' notes'"
             :class="{ 'no-header-title': $route.query.search }">
             <template #viewing>
                 {{ selected.size ? `${selected.size} Selected` : title }}
@@ -340,7 +354,7 @@ async function clearAll() {
                     <table class="w-100">
                         <tbody>
                             <TransitionGroup name="bounce">
-                                <NuxtLink v-for="note in paginatedPage()" :key="note.id"
+                                <NuxtLink v-for="note in paginatedNotes" :key="note.id"
                                     @contextmenu.prevent="selected.size || toggleSelect(note)"
                                     @click="e => handleClick(e, note)"
                                     :to="selected.size ? undefined : '/notes/' + note.id">

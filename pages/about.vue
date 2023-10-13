@@ -31,14 +31,25 @@ onMounted(async () => {
             </template>
             <template #header>
                 <div class="d-flex text-center align-items-center">
-                    <backIconButton class="m-2 mx-3" />
+                    <BackIconButton class="m-2 mx-3" />
                 </div>
             </template>
             <template #interaction>
                 <div class="d-flex flex-column align-items-center mt-2">
                     <h1>{{ appInfo?.name }}</h1>
-                    <span>Version {{ appInfo?.version }}</span>
-                    <span>Author: <a href="https://github.com/pixiedevpraveen" target="_blank">Praveen Yadav</a></span>
+
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th class="p-2">Version:</th>
+                                <td>{{ appInfo?.version }}</td>
+                            </tr>
+                            <tr>
+                                <th>Author:</th>
+                                <td><a href="https://github.com/pixiedevpraveen" target="_blank">Praveen Yadav</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </template>
         </OuiPage>
